@@ -30,6 +30,28 @@ include(cmake/CopyHelper.cmake)
 # NOTE: Also update env vars used for caching in
 #         - .github/actions/configure-cmake/action.yml
 #         - .github/workflows/cmake.yml
+#
+
+# Reduce FTXUI build scope (speed up): don't build its tests/examples/install
+set(FTXUI_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(FTXUI_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(FTXUI_ENABLE_INSTALL OFF CACHE BOOL "" FORCE)
+
+include(FetchContent)
+
+set(FETCHCONTENT_QUIET OFF)
+set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
+
+FetchContent_Declare(
+    ftxui
+    GIT_REPOSITORY https://github.com/ArthurSonzogni/ftxui.git
+    GIT_TAG        v4.1.0
+    GIT_SHALLOW    1
+)
+FetchContent_MakeAvailable(ftxui)
+
+
+
 # FetchContent_Declare(
 #         SomeLib
 #         GIT_REPOSITORY https://github.com/<SomeUser>/<SomeLib>.git
