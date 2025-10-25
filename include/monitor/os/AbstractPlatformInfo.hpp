@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 
 namespace monitor::os {
     class AbstractPlatformInfo {
@@ -20,6 +21,6 @@ namespace monitor::os {
             virtual std::string os_build()        const = 0; // e.g., "25A362"
             virtual std::string kernel_release()  const = 0; // e.g., "25.0.0"
             virtual std::string model_id()        const = 0; // e.g., "MacBookPro18,3"
-            virtual std::string hostname()        const = 0;
+            virtual std::string hostname()        const = 0;            
     };
 }
