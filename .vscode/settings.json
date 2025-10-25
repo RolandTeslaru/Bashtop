@@ -6,6 +6,8 @@
     "files.associations": {
         "*.dbclient-js": "javascript",
         "queue": "cpp",
-        "stack": "cpp"
-    }
+        "stack": "cpp",
+        "string": "cpp"
+    },
+    "C_Cpp.errorSquiggles": "enabled"
 }
