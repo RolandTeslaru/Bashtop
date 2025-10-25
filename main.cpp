@@ -7,6 +7,10 @@ using namespace ftxui;
 
 int main()
 {
+
+
+
+    // Create a screen to render on.
     auto screen = ScreenInteractive::FitComponent();
 
     std::string message = "Waiting...";
