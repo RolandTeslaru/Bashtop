@@ -1,0 +1,11 @@
+{
+    "C_Cpp.default.compileCommands": "${workspaceFolder}/compile_commands.json",
+    "C_Cpp.default.cppStandard": "c++23",
+    "C_Cpp.loggingLevel": "Warning",
+    "C_Cpp.intelliSenseEngineFallback": "Disabled",
+    "files.associations": {
+        "*.dbclient-js": "javascript",
+        "queue": "cpp",
+        "stack": "cpp"
+    }
+}
