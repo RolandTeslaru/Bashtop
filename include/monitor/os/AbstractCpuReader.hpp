@@ -1,17 +1,17 @@
 #pragma once
 #include "monitor/types/Cpu.hpp"
 
-using CpuRawSample = monitor::types::cpu::RawSample;
-
-namespace monitor::os {
-    using namespace monitor::types;
-    
-    // Even though CpuReader is explicit enough 
-    // I like the verbosity of the abstract prefix
+namespace monitor::os {    
+    // Contract like class for CPU readers
+    // Derived classes MUST implement the sample method
     class AbstractCpuReader {
         public:
-            virtual ~AbstractCpuReader()              = default;
-            virtual bool sample(CpuRawSample& out)    = 0;       // returns false on failure
+            virtual ~AbstractCpuReader() = default;
+            // reads the current CPU usage sample in out
+            // returns false on failure
+            virtual bool sample(
+                monitor::types::cpu::RawSample& out
+            ) = 0;      
     };
 
 }
