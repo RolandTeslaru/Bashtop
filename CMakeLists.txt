@@ -19,6 +19,10 @@ include(cmake/Options.cmake)
 include(cmake/CompilerFlags.cmake)
 include(cmake/CopyHelper.cmake)
 
+
+
+
+
 ###############################################################################
 
 # external dependencies with FetchContent
@@ -76,6 +80,46 @@ add_executable(${MAIN_EXECUTABLE_NAME}
 
 # Link against FTXUI component library to get headers and implementation
 target_link_libraries(${MAIN_EXECUTABLE_NAME} PRIVATE ftxui::component)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# Portable sources (engine/monitors/etc). Add yours here as you create them.
+target_sources(${MAIN_EXECUTABLE_NAME} PRIVATE
+  # src/metrics/CpuMonitor.cpp
+  # src/metrics/MemMonitor.cpp
+)
+
+# Your public and (optionally) private include dirs
+target_include_directories(${MAIN_EXECUTABLE_NAME} PRIVATE
+  ${CMAKE_SOURCE_DIR}/include
+  ${CMAKE_SOURCE_DIR}/src    # only needed if you include private headers from src/
+)
+
+
+
+# OS agnostic sources
+file(GLOB_RECURSE COMMON_SRCS CONFIGURE_DEPENDS
+  ${CMAKE_SOURCE_DIR}/src/metrics/*.cpp
+  ${CMAKE_SOURCE_DIR}/src/ui/*.cpp
+  ${CMAKE_SOURCE_DIR}/src/core/*.cpp
+)
+
+# OS specifc sources
+
+if(APPLE)
+  message(STATUS "Using macOS specific sources")
+  file(GLOB OS_SRCS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/readers/mac/*.cpp)
+elseif(WIN32)
+  message(STATUS "Using Windows specific sources")
+  file(GLOB OS_SRCS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/readers/win/*.cpp)
+else() # Linux
+  message(STATUS "Using Linux specific sources")
+  file(GLOB OS_SRCS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/readers/linux/*.cpp)
+endif()
+
+target_sources(${MAIN_EXECUTABLE_NAME} PRIVATE ${COMMON_SRCS} ${OS_SRCS})
+
+
 
 # NOTE: Add all defined targets (e.g. executables, libraries, etc. )
 # NOTE: RUN_SANITIZERS is optional, if it's not present it will default to true

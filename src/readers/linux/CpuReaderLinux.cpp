@@ -21,3 +21,10 @@ namespace monitor::os::linux {
             }
     };
 };
+
+
+namespace monitor::os {
+    std::unique_ptr<AbstractCpuReader> make_cpu_reader(){
+        return std::make_unique<linux::CpuReader>();
+    }
+}

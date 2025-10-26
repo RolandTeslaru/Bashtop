@@ -13,12 +13,17 @@ namespace monitor::metrics {
 
             void computeSnapshot();
 
+            double getCpuTotalUsage();
+            double getCpuCoreUsage(const unsigned int coreIdx);
+
         private:
             std::unique_ptr<monitor::os::AbstractCpuReader> cpuReader;
-            monitor::types::cpu::RawSample prevSample;
-            bool hasSampledOnce = false;
-
+            
             monitor::types::cpu::Snapshot latestSnapshot;
+            
+            monitor::types::cpu::RawSample prevSample;
+
+            bool hasSampledOnce = false;
 
             static double toDouble(auto num){
                 return static_cast<double>(num);
