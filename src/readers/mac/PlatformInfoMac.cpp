@@ -62,7 +62,7 @@ namespace monitor::os::mac
             ~PlatformInfoMac() override = default;
 
 
-            
+
             PlatformInfoMac(const PlatformInfoMac& macInfo){
                 cpu_name        = macInfo.cpu_name;
                 arch            = macInfo.arch;
@@ -166,3 +166,10 @@ namespace monitor::os::mac
 
     };
 };
+
+
+namespace monitor::os {
+    std::unique_ptr<AbstractPlatformInfo> make_platform_info(){
+        return std::make_unique<mac::PlatformInfoMac>();
+    }
+}

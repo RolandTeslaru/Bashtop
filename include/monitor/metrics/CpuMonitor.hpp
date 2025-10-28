@@ -1,4 +1,3 @@
-#pragma once
 #include <memory>
 #include "monitor/types/Cpu.hpp"
 #include "monitor/os/AbstractCpuReader.hpp"

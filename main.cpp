@@ -6,13 +6,22 @@
 #include <ftxui/dom/elements.hpp>
 
 #include "monitor/metrics/CpuMonitor.hpp"
+#include "monitor/metrics/SystemInfoProvider.hpp"
 #include "monitor/os/Factory.hpp"
 
 using namespace ftxui;
 
 int main()
 {
-    auto cpuMonitor = monitor::metrics::CpuMonitor(monitor::os::make_cpu_reader());
+    auto cpuMonitor = monitor::metrics::CpuMonitor(
+        monitor::os::make_cpu_reader()
+    );
+
+    auto platformInfo = monitor::metrics::SystemInfoProvider(
+        monitor::os::make_platform_info()
+    );
+
+    // std::cout << platformInfo << std::endl;
 
     while(true){
         cpuMonitor.computeSnapshot();
