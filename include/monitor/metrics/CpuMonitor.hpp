@@ -21,7 +21,7 @@ namespace monitor::metrics {
                    << "windowNs= "         << mon.latestSnapshot.window_ns 
                    << "total_percentage= " << mon.latestSnapshot.total_percentage;
 
-                for(int i = 0; i < mon.latestSnapshot.per_core_percentage.size(); i++)
+                for(size_t i = 0; i < mon.latestSnapshot.per_core_percentage.size(); i++)
                     os << "core" << i << " = " << mon.latestSnapshot.per_core_percentage[i] << "%";
                 
                 return os;

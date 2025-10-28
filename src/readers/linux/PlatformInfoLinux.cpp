@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <vector>
 #include <fstream>
+#include <memory>
 
 #include "monitor/os/AbstractPlatformInfo.hpp"
 
@@ -88,18 +89,18 @@ namespace monitor::os::linux
             }
 
 
-            
-            std::string cpu_name()        const override { return cpu_name; }
-            std::string arch()            const override { return arch; }
-            uint32_t    logical_cpus()    const override { return logical_cpus; }
-            uint32_t    physical_cpus()   const override { return physical_cpus; }
-            uint64_t    mem_total_bytes() const override { return mem_total_bytes; }
-            uint64_t    page_size_bytes() const override { return page_size_bytes; }
-            std::string os_version()      const override { return os_version; }
-            std::string os_build()        const override { return os_build; }
-            std::string kernel_release()  const override { return kernel_release; }
-            std::string model_id()        const override { return model_id; }
-            std::string hostname()        const override { return hostname; }
+
+            std::string getCpuName()       const override { return cpu_name; }
+            std::string getArch()          const override { return arch; }
+            uint32_t    getLogicalCpus()   const override { return logical_cpus; }
+            uint32_t    getPhysicalCpus()  const override { return physical_cpus; }
+            uint64_t    getMemTotalBytes() const override { return mem_total_bytes; }
+            uint64_t    getPageSizeBytes() const override { return page_size_bytes; }
+            std::string getOsVersion()     const override { return os_version; }
+            std::string getOsBuild()       const override { return os_build; }
+            std::string getKernelRelease() const override { return kernel_release; }
+            std::string getModelId()       const override { return model_id; }
+            std::string getHostname()      const override { return hostname; }
 
         private:
             static void readFromUnixObj(std::string& arch, std::string& kernelRelease){

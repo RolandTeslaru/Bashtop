@@ -21,7 +21,7 @@ int main()
         monitor::os::make_platform_info()
     );
 
-    // std::cout << platformInfo << std::endl;
+    std::cout << platformInfo.getPlatformInfo() << std::endl;
 
     while(true){
         cpuMonitor.computeSnapshot();
