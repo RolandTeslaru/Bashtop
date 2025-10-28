@@ -1,5 +1,5 @@
-#pragma once
 #include "monitor/types/Cpu.hpp"
+#include <chrono>
 
 namespace monitor::os {    
     // Contract like class for CPU readers
@@ -15,7 +15,7 @@ namespace monitor::os {
 
             static uint64_t toNanoseconds(const auto &duration){
                 return static_cast<uint64_t>(
-                    std::chrono::duration_cast<Nanoseconds>(duration).count()
+                    std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count()
                 );
             }
     };

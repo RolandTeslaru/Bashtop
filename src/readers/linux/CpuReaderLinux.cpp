@@ -2,6 +2,11 @@
 #include <cstdint>
 #include <chrono>
 #include <fstream>
+#include <string>
+#include <sstream>
+#include <memory>
+#include <cctype>
+#include <iostream>
 
 #include "monitor/os/AbstractCpuReader.hpp"
 #include "monitor/types/Cpu.hpp"
@@ -35,10 +40,16 @@ namespace monitor::os::linux {
     class CpuReader final : public monitor::os::AbstractCpuReader {
         public:
             bool sample(CpuRawSample& out) override {
+                // std::cout << "CpuReaderLinux: sampling /proc/stat" << std::endl;
 
                 std::ifstream f("/proc/stat");
-                if(!f)
+                if(!f){
+                    // std::cerr << "CpuReaderLinux: failed to open /proc/stat" << std::endl;
                     return false;
+                } 
+                // else {
+                //     std::cout << "CpuReaderLinux: successfully opened /proc/stat" << std::endl;
+                // }
 
                 out.per_core.clear();
                 
@@ -56,7 +67,7 @@ namespace monitor::os::linux {
                     std::istringstream iss(line);
                     std::string label;
 
-                    iss >> label; // cpu or cpu0, cpu1 etc
+                    iss >> label; // can be cpu wich is total or cpu0, cpu1, .. which is per core usage
 
                     uint64_t user=0, nicev=0, sys=0, idle=0, iowait=0, irq=0, softirq=0, steal=0, guest=0, guest_nice=0;
                     iss >> user >> nicev >> sys >> idle >> iowait >> irq >> softirq >> steal >> guest >> guest_nice;
@@ -71,10 +82,16 @@ namespace monitor::os::linux {
                         has_total = true;
                     }
                     else if(label.rfind("cpu", 0) == 0){
-                        int coreIdx = static_cast<int>(label[0]);
+                        const int coreIdx = std::stoi(label.substr(3));
+                        // std::cout << "CpuReaderLinux: coreIdx=" << coreIdx << std::endl;
 
-                        out.per_core[coreIdx].idle = idle_ticks;
-                        out.per_core[coreIdx].total = all_ticks;
+                        if(coreIdx >= 0){
+                            if(static_cast<size_t>(coreIdx) >= out.per_core.size())
+                                out.per_core.resize(coreIdx + 1);
+
+                            out.per_core[coreIdx].idle = idle_ticks;
+                            out.per_core[coreIdx].total = all_ticks;
+                        }
                     } else {
                         break;
                     }
