@@ -59,7 +59,9 @@
         "variant": "cpp",
         "vector": "cpp",
         "algorithm": "cpp",
-        "__config": "cpp"
+        "__config": "cpp",
+        "fstream": "cpp",
+        "iomanip": "cpp"
     },
     "C_Cpp.errorSquiggles": "enabled"
 }
