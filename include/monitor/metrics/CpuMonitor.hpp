@@ -2,6 +2,7 @@
 #include <memory>
 #include "monitor/types/Cpu.hpp"
 #include "monitor/os/AbstractCpuReader.hpp"
+#include <ostream>
 
 using CpuSnapshot = monitor::types::cpu::Snapshot;
 
@@ -15,6 +16,17 @@ namespace monitor::metrics {
 
             double getCpuTotalUsage();
             double getCpuCoreUsage(const unsigned int coreIdx);
+
+            friend std::ostream& operator<<(std::ostream& os, CpuMonitor& mon) {
+                os << "snapshot: " 
+                   << "windowNs= "         << mon.latestSnapshot.window_ns 
+                   << "total_percentage= " << mon.latestSnapshot.total_percentage;
+
+                for(int i = 0; i < mon.latestSnapshot.per_core_percentage.size(); i++)
+                    os << "core" << i << " = " << mon.latestSnapshot.per_core_percentage[i] << "%";
+                
+                return os;
+            }
 
         private:
             std::unique_ptr<monitor::os::AbstractCpuReader> cpuReader;
