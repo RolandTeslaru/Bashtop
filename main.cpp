@@ -25,8 +25,8 @@ int main()
 
     while(true){
         cpuMonitor.computeSnapshot();
-        std::cout << "CPU total usage: " << cpuMonitor.getCpuTotalUsage() << "%" << std::endl;
-        
+        std::cout << "CPU total usage: " << cpuMonitor.getCpuTotalUsage() << "%" << std::endl << std::endl;
+        std::cout << cpuMonitor << std::endl << std::endl;
         std::this_thread::sleep_for(std::chrono::seconds(2));
     }
 

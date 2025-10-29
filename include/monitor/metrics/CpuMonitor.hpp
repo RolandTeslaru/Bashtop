@@ -17,12 +17,12 @@ namespace monitor::metrics {
             double getCpuCoreUsage(const unsigned int coreIdx);
 
             friend std::ostream& operator<<(std::ostream& os, CpuMonitor& mon) {
-                os << "snapshot: " 
-                   << "windowNs= "         << mon.latestSnapshot.window_ns 
-                   << "total_percentage= " << mon.latestSnapshot.total_percentage;
+                os << "snapshot: "         << std::endl
+                   << "windowNs= "         << mon.latestSnapshot.window_ns << std::endl
+                   << "total_percentage= " << mon.latestSnapshot.total_percentage << std::endl;
 
                 for(size_t i = 0; i < mon.latestSnapshot.per_core_percentage.size(); i++)
-                    os << "core" << i << " = " << mon.latestSnapshot.per_core_percentage[i] << "%";
+                    os << "core" << i << " = " << mon.latestSnapshot.per_core_percentage[i] << "%" << std::endl;
                 
                 return os;
             }
