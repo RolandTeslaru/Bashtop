@@ -13,9 +13,7 @@ using namespace ftxui;
 
 int main()
 {
-    auto cpuMonitor = monitor::metrics::CpuMonitor(
-        monitor::os::make_cpu_reader()
-    );
+
 
     auto platformInfo = monitor::metrics::SystemInfoProvider(
         monitor::os::make_platform_info()
