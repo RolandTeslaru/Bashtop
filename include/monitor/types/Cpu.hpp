@@ -4,8 +4,8 @@
 
 namespace monitor::types::cpu {
     struct CoreTicks {
-        uint64_t idle  = 0; // Full idle time from boot
-        uint64_t total = 0; // Full total time since boot
+        uint64_t idle  = 0; // ticks spent idle since boot
+        uint64_t total = 0; // ticks spent total since boot (idle + busy)
     };
     
     // One read from what the os provides 
@@ -14,6 +14,7 @@ namespace monitor::types::cpu {
         CoreTicks               total;
         std::vector<CoreTicks>  per_core;
     };
+    
     
     // CpuSnapshot is computed from 2 CpuRawSamples: s1 and s2
     struct Snapshot {

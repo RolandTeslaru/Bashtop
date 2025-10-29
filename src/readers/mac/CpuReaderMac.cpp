@@ -6,7 +6,7 @@
 #include "monitor/types/Cpu.hpp"
 
 // To read the CPU usage on Mac systems,
-// we can use the Mach host API to get CPU load information.
+// we can use the Mach host API to get processor ticks
 #include <mach/mach_host.h>
 #include <mach/processor_info.h>
 #include <mach/mach.h>
@@ -23,7 +23,8 @@ namespace monitor::os::mac{
             bool sample(CpuRawSample &out) override{
 
                 natural_t cpuCount = 0;
-                processor_info_array_t info = nullptr; // this type is a generic pointer type so it allows us to return difrent kinds of data dpeending on the flavor
+                processor_info_array_t info = nullptr; 
+                
                 mach_msg_type_number_t infoCount = 0;
 
                 const kern_return_t kernel_call_return = host_processor_info(

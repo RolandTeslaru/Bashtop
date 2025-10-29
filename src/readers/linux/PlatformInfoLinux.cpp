@@ -49,6 +49,9 @@ namespace monitor::os::linux
                 os_version = "Linux";
 
                 hostname = readHostname();
+
+
+                // TODO: read cpu_name, os_build, model_id and other
             }
 
 
