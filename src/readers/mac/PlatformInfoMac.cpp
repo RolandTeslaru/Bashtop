@@ -128,12 +128,12 @@ class PlatformInfoMac final : public monitor::os::AbstractPlatformInfo {
             }
             return {};
         }
-};
+    };
 
-} // namespace monitor::os::mac
+}
 
 namespace monitor::os {
-std::unique_ptr<AbstractPlatformInfo> make_platform_info() {
-    return std::make_unique<mac::PlatformInfoMac>();
+    std::unique_ptr<AbstractPlatformInfo> make_platform_info() {
+        return std::make_unique<mac::PlatformInfoMac>();
+    }
 }
-} // namespace monitor::os
