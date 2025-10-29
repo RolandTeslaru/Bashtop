@@ -53,12 +53,10 @@ namespace monitor::os::linux {
 
                 out.per_core.clear();
                 
-                uint64_t totalIdle = 0;
-                uint64_t totalAll = 0;
+                // uint64_t totalIdle = 0;
+                // uint64_t totalAll = 0;
 
                 std::string line;
-
-                bool has_total = true;
 
                 while(std::getline(f, line)){
                     if(!this->isOnCpuLine(line))
@@ -79,7 +77,6 @@ namespace monitor::os::linux {
                     if(label == "cpu"){
                         out.total.idle = idle_ticks;
                         out.total.total = all_ticks;
-                        has_total = true;
                     }
                     else if(label.rfind("cpu", 0) == 0){
                         const int coreIdx = std::stoi(label.substr(3));
@@ -112,12 +109,12 @@ namespace monitor::os::linux {
                 return true;
             }
 
-            static bool isOnCpuCoreLine(const std::string& line){
-                if(CpuReader::isOnCpuLine(line) == true){
-                    return line.size() > 3 && std::isdigit(static_cast<unsigned char>(line[3]));
-                }
-                return false;
-            }
+            // static bool isOnCpuCoreLine(const std::string& line){
+            //     if(CpuReader::isOnCpuLine(line) == true){
+            //         return line.size() > 3 && std::isdigit(static_cast<unsigned char>(line[3]));
+            //     }
+            //     return false;
+            // }
     };
 };
 
