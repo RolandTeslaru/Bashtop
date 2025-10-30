@@ -16,7 +16,8 @@ namespace monitor::metrics {
             double getCpuTotalUsage();
             double getCpuCoreUsage(const unsigned int coreIdx);
 
-            friend std::ostream& operator<<(std::ostream& os, CpuMonitor& mon) {
+            friend std::ostream& operator<<(std::ostream& os, CpuMonitor& mon) 
+            {
                 os << "snapshot: "         << std::endl
                    << "windowNs= "         << mon.latestSnapshot.window_ns << std::endl
                    << "total_percentage= " << mon.latestSnapshot.total_percentage << std::endl;
@@ -39,7 +40,7 @@ namespace monitor::metrics {
             static double toDouble(auto num){
                 return static_cast<double>(num);
             }
-
+            
             static double getTotalPercentage(
                 const monitor::types::cpu::RawSample& newSample, 
                 const monitor::types::cpu::RawSample& prevSample

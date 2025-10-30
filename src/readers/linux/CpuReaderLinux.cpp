@@ -35,7 +35,6 @@ using Nanoseconds  = std::chrono::nanoseconds;
 // procs_blocked 0
 // softirq 142616 3917 15798 3 289 14960 0 505 37266 0 69878
 
-
 namespace monitor::os::linux {
     class CpuReader final : public monitor::os::AbstractCpuReader {
         public:

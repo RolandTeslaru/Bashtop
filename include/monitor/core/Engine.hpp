@@ -3,7 +3,6 @@
 #include "monitor/os/Factory.hpp"
 
 class Engine {
-    
     private:
         monitor::metrics::CpuMonitor cpuMonitor = monitor::metrics::CpuMonitor(
             monitor::os::make_cpu_reader()
