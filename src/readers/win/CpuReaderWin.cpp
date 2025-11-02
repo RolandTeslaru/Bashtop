@@ -5,6 +5,7 @@
 #endif
 
 #include <windows.h>
+#include <winternl.h>
 #include <vector>
 #include <cstdint>
 #include <chrono>
@@ -14,41 +15,7 @@
 #include "monitor/types/Cpu.hpp"
 
 // The recommended win32 api only exposes total cpu usage, not per core.
-// Therefore we use the lower level NT API which is not exposed thru a header file.
-// We need to recreate the actual data structres and get the memmory adress of the function that fetches the kernel info ourselves.
-
-#define SystemProcessorPerformanceInformation 8 // specifc number for Processor performance info
-// cool facts:
-//  5 is the system process info
-//  2 is system performance info
-// 13 is system time info
-
-#define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)
-
-
-extern "C" // use C linkage because nt is written in C
-{
-    typedef LONG NTSTATUS;
-    
-    // Structures for the query response
-    typedef struct _SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION
-    {
-        LARGE_INTEGER IdleTime;
-        LARGE_INTEGER KernelTime;
-        LARGE_INTEGER UserTime;
-        LARGE_INTEGER DpcTime;
-        LARGE_INTEGER InterruptTime;
-        ULONG InterruptCount;
-    } SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION, *PSYSTEM_PROCESSOR_PERFORMANCE_INFORMATION;
-    
-}
-
-// Function pointer type for NtQuerySystemInformation
-using NtQuerySysInfoFn = NTSTATUS(WINAPI *)(ULONG, PVOID, ULONG, PULONG);
-// Type alias for query response structure
-using NtCorePerformanceInfo = SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION;
-
-
+// Therefore we use the lower level NT API from ntdll.dll
 
 using CpuRawSample = monitor::types::cpu::RawSample;
 using CpuCoreTicks = monitor::types::cpu::CoreTicks;
@@ -59,102 +26,112 @@ using Nanoseconds = std::chrono::nanoseconds;
 
 namespace monitor::os::win
 {
+    // Pointer to the query function 
+    using NtQueryFunction       = decltype(&::NtQuerySystemInformation);
+    using NtCorePerformanceInfo = SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION;
+    
     class CpuReader final : public monitor::os::AbstractCpuReader
     {
-    public:
-        bool sample(CpuRawSample &out) override
-        {
-            DWORD logical_cpus = GetActiveProcessorCount(ALL_PROCESSOR_GROUPS);
-            if (!logical_cpus)
-                return false;
-
-            std::vector<NtCorePerformanceInfo> ntProcessorInfo(logical_cpus);
-
-            // Get the memory address of the hidden NtQuerySystemInformation function
-
-            // Unsafe casting, but necessary here
-            #pragma GCC diagnostic push
-            #pragma GCC diagnostic ignored "-Wcast-function-type"
-            static NtQuerySysInfoFn ntQuery = reinterpret_cast<NtQuerySysInfoFn>(
-                    ::GetProcAddress(
-                        ::GetModuleHandleW(L"ntdll.dll"),
-                        "NtQuerySystemInformation"
-                    )
-                );
-            #pragma GCC diagnostic pop
-
-            if (!ntQuery)
-                return false;
-
-            ULONG return_length = 0;
-
-            // Call the hidden function via the function pointer
-            NTSTATUS status = ntQuery(
-                SystemProcessorPerformanceInformation, // magic number 8 (processor info)
-                ntProcessorInfo.data(),                // output buffer
-                static_cast<ULONG>(ntProcessorInfo.size() * sizeof(NtCorePerformanceInfo)),
-                &return_length
-            );
-
-            if (!NT_SUCCESS(status))
-                return false;
-
-            readCores(out, logical_cpus, ntProcessorInfo);
-
-            // timestamp
-            const auto now = Clock::now().time_since_epoch();
-            out.timestamp_ns = static_cast<uint64_t>(
-                std::chrono::duration_cast<Nanoseconds>(now).count());
-
-            return true;
-        }
-    private:
-        static void readCores(
-            CpuRawSample& out,
-            const DWORD logical_cpus,
-            std::vector<SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION> ntAllCoresInfo
-        ) {
-            out.per_core.clear();
-            out.per_core.resize(logical_cpus);
-
-            uint64_t total_idle = 0;
-            uint64_t total_all = 0;
-
-            for (DWORD coreIdx = 0; coreIdx < logical_cpus; ++coreIdx)
+        public:
+            bool sample(CpuRawSample &out) override
             {
-                const auto &ntCoreInfo = ntAllCoresInfo[coreIdx];
+                DWORD logical_cpus = GetActiveProcessorCount(ALL_PROCESSOR_GROUPS);
+                if (!logical_cpus)
+                    return false;
 
-                const auto [idle, all] = readPerCoreTicks(out.per_core[coreIdx], ntCoreInfo);
+                std::vector<NtCorePerformanceInfo> ntProcessorInfo(logical_cpus);
 
-                total_idle += idle;
-                total_all += all;
+                static NtQueryFunction ntQuery = loadNtQueryFunction();
+                if (!ntQuery)
+                    return false;
+
+                ULONG return_length = 0;
+
+                // Query the nt kernel for processor performance info
+                NTSTATUS status = ntQuery(
+                    SystemProcessorPerformanceInformation, // magic number 8 (processor info)
+                    ntProcessorInfo.data(),                // output buffer
+                    static_cast<ULONG>(ntProcessorInfo.size() * sizeof(NtCorePerformanceInfo)),
+                    &return_length
+                );
+
+                if (!NT_SUCCESS(status))
+                    return false;
+
+                readCores(out, logical_cpus, ntProcessorInfo);
+
+                // timestamp
+                const auto now = Clock::now().time_since_epoch();
+                out.timestamp_ns = static_cast<uint64_t>(
+                    std::chrono::duration_cast<Nanoseconds>(now).count());
+
+                return true;
+            }
+        private:
+
+            // loads the NtQuerySystemInformation function from ntdll.dll
+            static NtQueryFunction loadNtQueryFunction(){
+                // get memory address of the nt query function
+                HMODULE ntdll = ::GetModuleHandleW(L"ntdll.dll");
+                if (!ntdll)
+                    return nullptr;
+
+                FARPROC proc = ::GetProcAddress(ntdll, "NtQuerySystemInformation");
+                if (!proc)
+                    return nullptr;
+
+                // fix annoying cast warnings
+                union {
+                    FARPROC         p;
+                    NtQueryFunction f;
+                } u{ proc };
+
+                return u.f;
             }
 
-            out.total.idle = total_idle;
-            out.total.total = total_all;
-        }
+            static void readCores(
+                CpuRawSample& out,
+                const DWORD logical_cpus,
+                std::vector<SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION> ntAllCoresInfo
+            ) {
+                out.per_core.clear();
+                out.per_core.resize(logical_cpus);
 
-        static std::tuple<const uint64_t, const uint64_t> readPerCoreTicks(
-            monitor::types::cpu::CoreTicks&                 coreTicks, 
-            const SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION& ntCoreInfo 
-        ){
-            const uint64_t idle      = static_cast<uint64_t>(ntCoreInfo.IdleTime.QuadPart);
-            const uint64_t kernel    = static_cast<uint64_t>(ntCoreInfo.KernelTime.QuadPart);
-            const uint64_t user      = static_cast<uint64_t>(ntCoreInfo.UserTime.QuadPart);
-            const uint64_t dpc       = static_cast<uint64_t>(ntCoreInfo.DpcTime.QuadPart);
-            const uint64_t interrupt = static_cast<uint64_t>(ntCoreInfo.InterruptTime.QuadPart);
+                uint64_t total_idle = 0;
+                uint64_t total_all = 0;
 
-            // Unlike Linux or Mac, windows counts idle time as part of kernel timme.
-            const uint64_t kernel_no_idle = (kernel > idle) ? (kernel - idle) : 0ULL;
+                for (DWORD coreIdx = 0; coreIdx < logical_cpus; ++coreIdx){
+                    const auto &ntCoreInfo = ntAllCoresInfo[coreIdx];
 
-            const uint64_t busy = kernel_no_idle + user + dpc + interrupt;
-            const uint64_t all = busy + idle;
+                    const auto [idle, all] = readPerCoreTicks(out.per_core[coreIdx], ntCoreInfo);
 
-            coreTicks.idle = idle;
-            coreTicks.total = all;
+                    total_idle += idle;
+                    total_all += all;
+                }
 
-            return std::make_tuple(idle, all);
-        }
+                out.total.idle = total_idle;
+                out.total.total = total_all;
+            }
+
+            static std::tuple<const uint64_t, const uint64_t> readPerCoreTicks(
+                monitor::types::cpu::CoreTicks&                 coreTicks, 
+                const SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION& ntCoreInfo 
+            ){
+                const uint64_t idle      = static_cast<uint64_t>(ntCoreInfo.IdleTime.QuadPart);
+                const uint64_t kernel    = static_cast<uint64_t>(ntCoreInfo.KernelTime.QuadPart);
+                const uint64_t user      = static_cast<uint64_t>(ntCoreInfo.UserTime.QuadPart);
+
+                // Unlike Linux or Mac, windows counts idle time as part of kernel timme.
+                const uint64_t kernel_no_idle = (kernel > idle) ? (kernel - idle) : 0ULL;
+
+                const uint64_t busy = kernel_no_idle + user;
+                const uint64_t all = busy + idle;
+
+                coreTicks.idle = idle;
+                coreTicks.total = all;
+
+                return std::make_tuple(idle, all);
+            }
     };
 
 
