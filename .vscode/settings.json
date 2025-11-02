@@ -62,7 +62,10 @@
         "__config": "cpp",
         "fstream": "cpp",
         "iomanip": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "format": "cpp",
+        "xiosbase": "cpp",
+        "xutility": "cpp"
     },
     "C_Cpp.errorSquiggles": "enabled"
 }

@@ -1,5 +1,6 @@
 oop/
 build-linux-x86_64/
+build-mingw/
 build/
 install_dir/
 
