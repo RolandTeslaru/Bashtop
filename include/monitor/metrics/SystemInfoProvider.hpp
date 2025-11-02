@@ -1,3 +1,4 @@
+#pragma once
 #include <memory>
 #include "monitor/os/AbstractPlatformInfo.hpp"
 

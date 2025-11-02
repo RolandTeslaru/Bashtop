@@ -7,15 +7,24 @@
 #include "monitor/metrics/CpuMonitor.hpp"
 #include "monitor/types/Cpu.hpp"
 
-
 namespace monitor::metrics {
 
     CpuMonitor::CpuMonitor(std::unique_ptr<monitor::os::AbstractCpuReader> reader){
         cpuReader = std::move(reader);
+
+        // Run an intial snapshot to get the cores;
+        monitor::types::cpu::RawSample sample;
+        cpuReader->sample(sample);
+
+        num_cores = sample.per_core.size(); // get the number of cores from an initial dummy sample
     }
 
     CpuMonitor::~CpuMonitor(){
 
+    }
+
+    int CpuMonitor::getNumCores(){
+        return this->num_cores;
     }
 
     double CpuMonitor::getCpuTotalUsage(){

@@ -1,3 +1,4 @@
+#pragma once
 #include <memory>
 #include "monitor/types/Cpu.hpp"
 #include "monitor/os/AbstractCpuReader.hpp"
@@ -15,6 +16,7 @@ namespace monitor::metrics {
 
             double getCpuTotalUsage();
             double getCpuCoreUsage(const unsigned int coreIdx);
+            int getNumCores();
 
             friend std::ostream& operator<<(std::ostream& os, CpuMonitor& mon) 
             {
@@ -36,6 +38,9 @@ namespace monitor::metrics {
             monitor::types::cpu::RawSample prevSample;
 
             bool hasSampledOnce = false;
+
+            int num_cores; // number of cores
+
 
             static double toDouble(auto num){
                 return static_cast<double>(num);

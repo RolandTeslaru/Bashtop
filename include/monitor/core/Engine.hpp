@@ -1,33 +1,33 @@
-#include "monitor/metrics/CpuMonitor.hpp"
+// include/monitor/Engine.hpp
+#pragma once
+#include <memory>
 #include "monitor/metrics/MemMonitor.hpp"
-#include "monitor/os/Factory.hpp"
+#include "monitor/metrics/CpuMonitor.hpp"
+#include "monitor/os/AbstractCpuReader.hpp"
+#include "monitor/os/AbstractMemReader.hpp"
 
-class Engine {
-    private:
-        monitor::metrics::CpuMonitor cpuMonitor = monitor::metrics::CpuMonitor(
-            monitor::os::make_cpu_reader()
-        );
-        
-        monitor::metrics::MemMonitor memMonitor = monitor::metrics::MemMonitor(
-            monitor::os::make_mem_reader()
-        );
-
-    public:
-        Engine(){}
-    
-        void update(){
-            this->cpuMonitor.computeSnapshot();
-        }
-
-        monitor::metrics::CpuMonitor& getCpuMonitor(){
-            return this->cpuMonitor;
-        }
-
-        monitor::metrics::MemMonitor& getMemMonitor(){
-            return this->memMonitor;
-        }
-};
 
 namespace monitor {
-    Engine engine = Engine();
-}
+    class Engine {
+        private:
+            monitor::metrics::CpuMonitor cpuMonitor;
+            
+            monitor::metrics::MemMonitor memMonitor;
+
+        public:
+            Engine();
+            ~Engine() = default;
+
+            Engine(
+                std::unique_ptr<os::AbstractCpuReader> cpuReader,
+                std::unique_ptr<os::AbstractMemReader> memReader
+            );
+
+            monitor::metrics::CpuMonitor& getCpuMonitor();
+            monitor::metrics::MemMonitor& getMemMonitor();
+
+            void tick();
+        private:
+    };
+
+} // namespace monitor

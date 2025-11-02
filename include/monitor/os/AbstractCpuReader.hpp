@@ -1,3 +1,4 @@
+#pragma once
 #include "monitor/types/Cpu.hpp"
 #include <chrono>
 

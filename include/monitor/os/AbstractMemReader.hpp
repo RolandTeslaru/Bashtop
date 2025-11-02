@@ -1,8 +1,7 @@
-#include "monitor/types/Mem.hpp"
+#pragma once
 #include <chrono>
 
 namespace monitor::os {    
-    // Contract like class for CPU readers
 
     class AbstractMemReader {
         public:
