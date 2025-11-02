@@ -43,7 +43,9 @@ extern "C" // use C linkage because nt is written in C
     
 }
 
+// Function pointer type for NtQuerySystemInformation
 using NtQuerySysInfoFn = NTSTATUS(WINAPI *)(ULONG, PVOID, ULONG, PULONG);
+// Type alias for query response structure
 using NtCorePerformanceInfo = SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION;
 
 
@@ -69,12 +71,17 @@ namespace monitor::os::win
             std::vector<NtCorePerformanceInfo> ntProcessorInfo(logical_cpus);
 
             // Get the memory address of the hidden NtQuerySystemInformation function
+
+            // Unsafe casting, but necessary here
+            #pragma GCC diagnostic push
+            #pragma GCC diagnostic ignored "-Wcast-function-type"
             static NtQuerySysInfoFn ntQuery = reinterpret_cast<NtQuerySysInfoFn>(
                     ::GetProcAddress(
                         ::GetModuleHandleW(L"ntdll.dll"),
                         "NtQuerySystemInformation"
                     )
                 );
+            #pragma GCC diagnostic pop
 
             if (!ntQuery)
                 return false;

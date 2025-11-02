@@ -69,11 +69,11 @@ namespace monitor::metrics {
         // Get the number of cores, it should stay the same but they can change
         const std::size_t prev_num_cores = prevSample.per_core.size();
         const std::size_t cur_num_cores  = currentSample.per_core.size();
-        const std::size_t num_cores      = std::min(prev_num_cores, cur_num_cores);
+        this->num_cores      = std::min(prev_num_cores, cur_num_cores);
 
-        latestSnapshot.per_core_percentage.assign(num_cores, 0.0);
+        latestSnapshot.per_core_percentage.assign(this->num_cores, 0.0);
 
-        for(std::size_t coreIdx = 0; coreIdx < num_cores; ++coreIdx){
+        for(std::size_t coreIdx = 0; coreIdx < this->num_cores; ++coreIdx){
             monitor::types::cpu::CoreTicks currCoreTicks = currentSample.per_core[coreIdx];
             monitor::types::cpu::CoreTicks prevCoreTicks = prevSample.per_core[coreIdx];
 

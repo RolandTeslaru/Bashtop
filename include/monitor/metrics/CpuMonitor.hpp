@@ -39,7 +39,7 @@ namespace monitor::metrics {
 
             bool hasSampledOnce = false;
 
-            int num_cores; // number of cores
+            size_t num_cores; // number of cores
 
 
             static double toDouble(auto num){
