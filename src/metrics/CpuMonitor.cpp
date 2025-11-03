@@ -51,7 +51,7 @@ namespace monitor::metrics {
     const vector_double CpuMonitor::getCpuUsageHistory(){
         return this->cpu_usage_history;
     }
-    const vector_double CpuMonitor::getCoreUsageHistory(
+    [[maybe_unused]] const vector_double CpuMonitor::getCoreUsageHistory(
         const unsigned int coreIdx
     ){
         bool doesCoreExist = this->core_usage_history.size() > coreIdx;
