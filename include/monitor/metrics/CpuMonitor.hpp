@@ -35,7 +35,7 @@ namespace monitor::metrics {
             }
 
             const vector_double getCpuUsageHistory();
-            const vector_double getCoreUsageHistory(const unsigned int coreIdx);
+            [[maybe_unused]] const vector_double getCoreUsageHistory(const unsigned int coreIdx);
 
         private:
             std::unique_ptr<AbstractCpuReader> cpuReader;
