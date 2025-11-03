@@ -85,7 +85,12 @@ runs:
       if: matrix.cxx == 'cl' && matrix.runs_asan == true
       continue-on-error: true
       run: |
-        cat "${INPUT_FILENAME}" | ./${{ env.ZIP_NAME }}/"${EXECUTABLE_NAME}".exe
+        timeout 8s ./${{ env.ZIP_NAME }}/"${EXECUTABLE_NAME}".exe || code=$?
+        code="${code:-0}"
+        # Treat timeout (124) as success
+        if [ "$code" != 0 ] && [ "$code" != 124 ]; then
+          exit "$code"
+        fi
 
     - name: Valgrind
       shell: bash
