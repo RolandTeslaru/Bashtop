@@ -87,7 +87,7 @@ namespace monitor::ui
     private:
         CpuMonitor                 &monitor;
         vector_double              cpu_usage_history;
-        std::vector<vector_double> core_usage_history;
+        [[maybe_unused]] std::vector<vector_double> core_usage_history;
     };
 }
 
