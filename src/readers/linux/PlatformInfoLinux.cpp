@@ -56,19 +56,19 @@ namespace monitor::os::linux
 
 
 
-            PlatformInfoLinux(const PlatformInfoLinux& linuxInfo){
-                cpu_name        = linuxInfo.cpu_name;
-                arch            = linuxInfo.arch;
-                logical_cpus    = linuxInfo.logical_cpus;
-                physical_cpus   = linuxInfo.physical_cpus;
-                mem_total_bytes = linuxInfo.mem_total_bytes;
-                page_size_bytes = linuxInfo.page_size_bytes;
-                os_version      = linuxInfo.os_version;
-                os_build        = linuxInfo.os_build;
-                kernel_release  = linuxInfo.kernel_release;
-                model_id        = linuxInfo.model_id;
-                hostname        = linuxInfo.hostname;
-            }
+            PlatformInfoLinux(const PlatformInfoLinux& linuxInfo):
+                cpu_name(linuxInfo.cpu_name),
+                arch(linuxInfo.arch),
+                logical_cpus(linuxInfo.logical_cpus),
+                physical_cpus(linuxInfo.physical_cpus),
+                mem_total_bytes(linuxInfo.mem_total_bytes),
+                page_size_bytes(linuxInfo.page_size_bytes),
+                os_version(linuxInfo.os_version),
+                os_build(linuxInfo.os_build),
+                kernel_release(linuxInfo.kernel_release),
+                model_id(linuxInfo.model_id),
+                hostname(linuxInfo.hostname)
+            {}
 
 
 

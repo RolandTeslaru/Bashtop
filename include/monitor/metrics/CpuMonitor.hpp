@@ -18,7 +18,7 @@ namespace monitor::metrics {
             double getCpuCoreUsage(const unsigned int coreIdx);
             int getNumCores();
 
-            friend std::ostream& operator<<(std::ostream& os, CpuMonitor& mon) 
+            friend std::ostream& operator<<(std::ostream& os, const CpuMonitor& mon) 
             {
                 os << "snapshot: "         << std::endl
                    << "windowNs= "         << mon.latestSnapshot.window_ns << std::endl

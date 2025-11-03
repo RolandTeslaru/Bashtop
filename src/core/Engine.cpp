@@ -26,7 +26,7 @@ namespace monitor {
         return this->cpuMonitor;
     }
 
-    monitor::metrics::MemMonitor& Engine::getMemMonitor(){
+    [[maybe_unused]] monitor::metrics::MemMonitor& Engine::getMemMonitor(){
         return this->memMonitor;
     }
 }

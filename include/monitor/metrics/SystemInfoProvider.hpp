@@ -8,7 +8,7 @@ namespace monitor::metrics {
             explicit SystemInfoProvider(std::unique_ptr<monitor::os::AbstractPlatformInfo> platformInfo);
             ~SystemInfoProvider() = default;
 
-            const monitor::os::AbstractPlatformInfo& getPlatformInfo() const {
+            [[maybe_unused]] const monitor::os::AbstractPlatformInfo& getPlatformInfo() const {
                 return *platformInfo;
             }
         

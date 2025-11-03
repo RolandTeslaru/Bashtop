@@ -24,7 +24,7 @@ namespace monitor {
             );
 
             monitor::metrics::CpuMonitor& getCpuMonitor();
-            monitor::metrics::MemMonitor& getMemMonitor();
+            [[maybe_unused]] monitor::metrics::MemMonitor& getMemMonitor();
 
             void tick();
         private:

@@ -9,9 +9,10 @@
 
 
 namespace monitor::metrics {
-    MemMonitor::MemMonitor(std::unique_ptr<monitor::os::AbstractMemReader> reader){
-        memReader = std::move(reader);
-    }
+    MemMonitor::MemMonitor(std::unique_ptr<monitor::os::AbstractMemReader> reader)
+    : memReader(std::move(reader))
+    
+    {}
 
     MemMonitor::~MemMonitor(){
         

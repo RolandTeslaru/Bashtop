@@ -9,9 +9,9 @@
 
 namespace monitor::metrics {
 
-    CpuMonitor::CpuMonitor(std::unique_ptr<monitor::os::AbstractCpuReader> reader){
-        cpuReader = std::move(reader);
-
+    CpuMonitor::CpuMonitor(std::unique_ptr<monitor::os::AbstractCpuReader> reader)
+    : cpuReader(std::move(reader))
+    {
         // Run an intial snapshot to get the cores;
         monitor::types::cpu::RawSample sample;
         cpuReader->sample(sample);

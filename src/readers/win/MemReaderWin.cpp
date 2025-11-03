@@ -14,7 +14,7 @@
 namespace monitor::os::win {
     class MemReader final : public monitor::os::AbstractMemReader {
         public:
-            bool sample() override{
+            [[maybe_unused]] bool sample() override{
                 return true;
             }
     };

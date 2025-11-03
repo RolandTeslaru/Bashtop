@@ -14,10 +14,6 @@
 namespace monitor::os::mac {
     class MemReader final : public monitor::os::AbstractMemReader {
         public:
-            MemReader(){
-
-            }
-
             [[maybe_unused]] bool sample() override {
                 return true;
             }
