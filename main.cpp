@@ -33,6 +33,8 @@ namespace monitor::ui
             double current_total_usage = monitor.getCpuTotalUsage();
             cpu_usage_history = monitor.getCpuUsageHistory();
 
+
+
             auto graphFunc = [this](int width, int height)
             {
                 vector_int out(width, 0);
@@ -87,7 +89,6 @@ namespace monitor::ui
     private:
         CpuMonitor                 &monitor;
         vector_double              cpu_usage_history;
-        [[maybe_unused]] std::vector<vector_double> core_usage_history;
     };
 }
 
