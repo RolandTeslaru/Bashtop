@@ -8,7 +8,7 @@ Reads CPU usage (total + per core), memory usage (currently none), platform info
 
 Current Implementation Status
 
-CPU Isage
+CPU Usage
 
 	•	✅ macOS: using mach host API.
 	•	✅ Linux: reading from /proc/stat.
