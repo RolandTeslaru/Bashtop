@@ -212,6 +212,8 @@ void thread_function(monitor::Engine& engine, ftxui::ScreenInteractive& screen){
 int main()
 {
 
+
+    
     
     auto screen = ftxui::ScreenInteractive::Fullscreen();
     
