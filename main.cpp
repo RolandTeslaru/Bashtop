@@ -212,6 +212,12 @@ void thread_function(monitor::Engine &engine, ftxui::ScreenInteractive &screen)
 
 int main()
 {
+    int a;
+    std::cin >> a;
+    if (a == 0)
+        return 0;
+
+
     // Not used, but still call make_platform_info so cppcheck doesnt yap about unused function
     auto platformInfo = monitor::metrics::SystemInfoProvider(
         monitor::os::make_platform_info());
