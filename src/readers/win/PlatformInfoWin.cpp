@@ -7,11 +7,6 @@
 
 #include "monitor/os/AbstractPlatformInfo.hpp"
 
-
-#include <unistd.h>
-#include <sys/utsname.h>
-
-
 namespace monitor::os::win
 {
     class PlatformInfoWin final : public monitor::os::AbstractPlatformInfo{

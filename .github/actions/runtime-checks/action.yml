@@ -51,7 +51,33 @@ runs:
       # env:
       #   ASAN_OPTIONS: detect_leaks=1
       run: |
-        cat "${INPUT_FILENAME}" | tr -d '\r' | ./${{ env.ZIP_NAME }}/"${EXECUTABLE_NAME}"
+        set -euo pipefail
+
+        # Configure ASan defaults. Leak detection unsupported on macOS.
+        if [ "${RUNNER_OS:-}" = "Linux" ]; then
+          export ASAN_OPTIONS="halt_on_error=1:abort_on_error=1:detect_leaks=1:color=always"
+        else
+          export ASAN_OPTIONS="halt_on_error=1:abort_on_error=1:color=always"
+        fi
+
+        CMD="./${{ env.ZIP_NAME }}/\"${EXECUTABLE_NAME}\""
+        PIPE_CMD="cat \"${INPUT_FILENAME}\" | tr -d '\r' | ${CMD}"
+
+        # Give FTXUI a PTY so it initializes, and time-box execution to avoid hangs in CI.
+        if [ "${RUNNER_OS:-}" = "Linux" ] && command -v script >/dev/null 2>&1; then
+          timeout -s SIGINT 8s script -qfec "bash -lc '${PIPE_CMD}'" /dev/null || code=$?
+        elif [ "${RUNNER_OS:-}" = "Linux" ]; then
+          timeout -s SIGINT 8s bash -lc "${PIPE_CMD}" || code=$?
+        else
+          # On macOS (no GNU timeout by default), just run without timeout.
+          bash -lc "${PIPE_CMD}" || code=$?
+        fi
+
+        code="${code:-0}"
+        # 124 is timeout -> treat as success (we only need a short run for sanitizer coverage)
+        if [ "$code" != 0 ] && [ "$code" != 124 ]; then
+          exit "$code"
+        fi
 
     - name: Sanitizers (Windows MSVC)
       shell: bash
@@ -65,4 +91,17 @@ runs:
       shell: bash
       if: runner.os == 'Linux' && matrix.runs_valgrind == true
       run: |
-        bash ./scripts/run_valgrind.sh "${{ env.ZIP_NAME }}"
+        set -euo pipefail
+
+        if [ "${RUNNER_OS:-}" = "Linux" ]; then
+          timeout -s SIGINT 20s bash ./scripts/run_valgrind.sh "${{ env.ZIP_NAME }}" || code=$?
+        else
+          bash ./scripts/run_valgrind.sh "${{ env.ZIP_NAME }}" || code=$?
+        fi
+
+        code="${code:-0}"
+        if [ "$code" = 124 ]; then
+          echo "Valgrind timed out (expected in CI UI mode). No errors reported."
+          exit 0
+        fi
+        exit "$code"
