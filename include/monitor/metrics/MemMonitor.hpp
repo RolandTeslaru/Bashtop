@@ -6,7 +6,7 @@
 namespace monitor::metrics {
     class MemMonitor {
         public:
-            MemMonitor(std::unique_ptr<monitor::os::AbstractMemReader> reader);
+            explicit MemMonitor(std::unique_ptr<monitor::os::AbstractMemReader> reader);
             ~MemMonitor();
 
         private:

@@ -26,10 +26,10 @@ include(cmake/CopyHelper.cmake)
 ###############################################################################
 
 # external dependencies with FetchContent
-# include(FetchContent)
+include(FetchContent)
 #
-# set(FETCHCONTENT_QUIET OFF)
-# set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
+set(FETCHCONTENT_QUIET OFF)
+set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
 #
 # NOTE: Also update env vars used for caching in
 #         - .github/actions/configure-cmake/action.yml
@@ -37,19 +37,11 @@ include(cmake/CopyHelper.cmake)
 #
 
 # Reduce FTXUI build scope (speed up): don't build its tests/examples/install
-set(FTXUI_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(FTXUI_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(FTXUI_ENABLE_INSTALL OFF CACHE BOOL "" FORCE)
-
-include(FetchContent)
-
-set(FETCHCONTENT_QUIET OFF)
-set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
 
 FetchContent_Declare(
     ftxui
     GIT_REPOSITORY https://github.com/ArthurSonzogni/ftxui.git
-    GIT_TAG        v4.1.0
+    GIT_TAG        v6.1.9
     GIT_SHALLOW    1
 )
 FetchContent_MakeAvailable(ftxui)
@@ -78,46 +70,7 @@ add_executable(${MAIN_EXECUTABLE_NAME}
     main.cpp
 )
 
-# Link against FTXUI component library to get headers and implementation
-target_link_libraries(${MAIN_EXECUTABLE_NAME} PRIVATE ftxui::component)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-# Portable sources (engine/monitors/etc). Add yours here as you create them.
-target_sources(${MAIN_EXECUTABLE_NAME} PRIVATE
-  # src/metrics/CpuMonitor.cpp
-  # src/metrics/MemMonitor.cpp
-)
-
-# Your public and (optionally) private include dirs
-target_include_directories(${MAIN_EXECUTABLE_NAME} PRIVATE
-  ${CMAKE_SOURCE_DIR}/include
-  ${CMAKE_SOURCE_DIR}/src    # only needed if you include private headers from src/
-)
-
-
-
-# OS agnostic sources
-file(GLOB_RECURSE COMMON_SRCS CONFIGURE_DEPENDS
-  ${CMAKE_SOURCE_DIR}/src/metrics/*.cpp
-  ${CMAKE_SOURCE_DIR}/src/ui/*.cpp
-  ${CMAKE_SOURCE_DIR}/src/core/*.cpp
-)
-
-# OS specifc sources
-
-if(APPLE)
-  message(STATUS "Using macOS specific sources")
-  file(GLOB OS_SRCS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/readers/mac/*.cpp)
-elseif(WIN32)
-  message(STATUS "Using Windows specific sources")
-  file(GLOB OS_SRCS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/readers/win/*.cpp)
-else() # Linux
-  message(STATUS "Using Linux specific sources")
-  file(GLOB OS_SRCS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/readers/linux/*.cpp)
-endif()
-
-target_sources(${MAIN_EXECUTABLE_NAME} PRIVATE ${COMMON_SRCS} ${OS_SRCS})
 
 
 
@@ -136,6 +89,9 @@ set_compiler_flags(RUN_SANITIZERS TRUE TARGET_NAMES ${MAIN_EXECUTABLE_NAME})
 # target_link_directories(${MAIN_EXECUTABLE_NAME} PRIVATE ${<SomeLib>_BINARY_DIR}/lib)
 # target_link_libraries(${MAIN_EXECUTABLE_NAME} <SomeLib>)
 
+# Link against FTXUI component library to get headers and implementation
+target_link_libraries(${MAIN_EXECUTABLE_NAME} PRIVATE ftxui::component)
+
 ###############################################################################
 
 # copy binaries to "bin" folder; these are uploaded as artifacts on each release
@@ -148,3 +104,35 @@ endif()
 copy_files(FILES tastatura.txt COPY_TO_DESTINATION TARGET_NAME ${MAIN_EXECUTABLE_NAME})
 # copy_files(FILES tastatura.txt config.json DIRECTORY images sounds COPY_TO_DESTINATION TARGET_NAME ${MAIN_EXECUTABLE_NAME})
 # copy_files(DIRECTORY images sounds COPY_TO_DESTINATION TARGET_NAME ${MAIN_EXECUTABLE_NAME})
+
+
+
+
+
+
+
+# Add include directories
+target_include_directories(${MAIN_EXECUTABLE_NAME} PRIVATE
+  ${CMAKE_SOURCE_DIR}/include
+  ${CMAKE_SOURCE_DIR}/src
+)
+
+
+file(GLOB_RECURSE COMMON_SRCS CONFIGURE_DEPENDS
+  ${CMAKE_SOURCE_DIR}/src/core/*.cpp
+  ${CMAKE_SOURCE_DIR}/src/metrics/*.cpp
+  ${CMAKE_SOURCE_DIR}/src/ui/*.cpp
+)
+
+file(GLOB READER_MAC_SRCS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/readers/mac/*.cpp)
+file(GLOB READER_WIN_SRCS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/readers/win/*.cpp)
+file(GLOB READER_LINUX_SRCS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/readers/linux/*.cpp)
+
+target_sources(${MAIN_EXECUTABLE_NAME} PRIVATE ${COMMON_SRCS})
+target_sources(${MAIN_EXECUTABLE_NAME} PRIVATE
+  $<$<PLATFORM_ID:Darwin>:${READER_MAC_SRCS}>
+  $<$<PLATFORM_ID:Windows>:${READER_WIN_SRCS}>
+  $<$<PLATFORM_ID:Linux>:${READER_LINUX_SRCS}>
+)
+
+

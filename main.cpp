@@ -38,7 +38,7 @@ public:
     int shift = 0;
 };
 
-std::vector<int> triangle(int width, int height)
+[[maybe_unused]] std::vector<int> triangle(int width, int height)
 {
     std::vector<int> output(width);
     for (int i = 0; i < width; ++i)
@@ -71,7 +71,7 @@ namespace monitor::ui
             explicit CpuWidget(monitor::metrics::CpuMonitor &monitor)
                 : monitor_(monitor) {}
 
-            ftxui::Element Render() override
+            ftxui::Element OnRender() override
             {
                 float cpu = monitor_.getCpuTotalUsage();
 
@@ -126,7 +126,7 @@ namespace monitor::ui
         public:
             explicit CpuWidget2(monitor::metrics::CpuMonitor &monitor_) : monitor(monitor_) {}
 
-            ftxui::Element Render() override {
+            ftxui::Element OnRender() override {
                 double total_usage = monitor.getCpuTotalUsage();
                 double num_cores = monitor.getNumCores();
                 cpu_usage_history.push_back(total_usage);

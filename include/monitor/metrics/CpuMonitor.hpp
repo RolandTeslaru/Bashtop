@@ -9,7 +9,7 @@ using CpuSnapshot = monitor::types::cpu::Snapshot;
 namespace monitor::metrics {
     class CpuMonitor {
         public:
-            CpuMonitor(std::unique_ptr<monitor::os::AbstractCpuReader> reader);
+            explicit CpuMonitor(std::unique_ptr<monitor::os::AbstractCpuReader> reader);
             ~CpuMonitor();
 
             void computeSnapshot();

@@ -71,7 +71,7 @@ class PlatformInfoMac final : public monitor::os::AbstractPlatformInfo {
         PlatformInfoMac &operator=(const PlatformInfoMac &) = default;
 
         std::string getCpuName()        const override { return cpu_name; }
-        std::string getArch()            const override { return cpu_architecture; }
+        std::string getArch()           const override { return cpu_architecture; }
         uint32_t    getLogicalCpus()    const override { return logical_cpus; }
         uint32_t    getPhysicalCpus()   const override { return physical_cpus; }
         uint64_t    getMemTotalBytes()  const override { return total_memory_bytes; }
@@ -80,7 +80,7 @@ class PlatformInfoMac final : public monitor::os::AbstractPlatformInfo {
         std::string getOsBuild()        const override { return os_build; }
         std::string getKernelRelease()  const override { return kernel_release; }
         std::string getModelId()        const override { return model_identifier; }
-        std::string getHostname()      const override { return host_name; }
+        std::string getHostname()       const override { return host_name; }
 
     private:
         static void readFromUnixObj(std::string &arch, std::string &release) {

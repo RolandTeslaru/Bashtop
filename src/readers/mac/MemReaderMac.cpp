@@ -18,7 +18,7 @@ namespace monitor::os::mac {
 
             }
 
-            bool sample() override {
+            [[maybe_unused]] bool sample() override {
                 return true;
             }
     };
