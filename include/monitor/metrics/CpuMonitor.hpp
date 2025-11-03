@@ -4,12 +4,16 @@
 #include "monitor/os/AbstractCpuReader.hpp"
 #include <ostream>
 
-using CpuSnapshot = monitor::types::cpu::Snapshot;
+using CpuSnapshot       = monitor::types::cpu::Snapshot;
+using RawSample         = monitor::types::cpu::RawSample;
+using CoreTicks         = monitor::types::cpu::CoreTicks;
+using AbstractCpuReader = monitor::os::AbstractCpuReader;
+using vector_double     = std::vector<double>;
 
 namespace monitor::metrics {
     class CpuMonitor {
         public:
-            explicit CpuMonitor(std::unique_ptr<monitor::os::AbstractCpuReader> reader);
+            explicit CpuMonitor(std::unique_ptr<AbstractCpuReader> reader);
             ~CpuMonitor();
 
             void computeSnapshot();
@@ -30,25 +34,31 @@ namespace monitor::metrics {
                 return os;
             }
 
+            const vector_double getCpuUsageHistory();
+            const vector_double getCoreUsageHistory(const unsigned int coreIdx);
+
         private:
-            std::unique_ptr<monitor::os::AbstractCpuReader> cpuReader;
+            std::unique_ptr<AbstractCpuReader> cpuReader;
             
-            monitor::types::cpu::Snapshot latestSnapshot;
-            
-            monitor::types::cpu::RawSample prevSample;
+            RawSample   prevSample;
+            CpuSnapshot latestSnapshot;
 
             bool hasSampledOnce = false;
 
             size_t num_cores; // number of cores
+            
+            // History
+            vector_double cpu_usage_history;
+            std::vector<vector_double> core_usage_history;
 
-
+            // Helpers
             static double toDouble(auto num){
                 return static_cast<double>(num);
             }
             
             static double getTotalPercentage(
-                const monitor::types::cpu::RawSample& newSample, 
-                const monitor::types::cpu::RawSample& prevSample
+                const RawSample& newSample, 
+                const RawSample& prevSample
             ){
                 const double idle_delta  = toDouble(newSample.total.idle  - prevSample.total.idle);
                 const double total_delta = toDouble(newSample.total.total - prevSample.total.total);
@@ -67,8 +77,8 @@ namespace monitor::metrics {
             }
 
             static double getCorePercentage(
-                const monitor::types::cpu::CoreTicks newCoreTick,
-                const monitor::types::cpu::CoreTicks prevCoreTick
+                const CoreTicks newCoreTick,
+                const CoreTicks prevCoreTick
             ){
                 const double idle_delta  = toDouble(newCoreTick.idle  - prevCoreTick.idle);
                 const double total_delta = toDouble(newCoreTick.total - prevCoreTick.total);

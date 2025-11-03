@@ -16,132 +16,26 @@
 
 using namespace ftxui;
 
-class Graph
-{
-public:
-    std::vector<int> operator()(int width, int height) const
-    {
-        std::vector<int> output(width);
+using CpuMonitor    = monitor::metrics::CpuMonitor;
+using vector_double = std::vector<double>;
+using vector_int    = std::vector<int>;
 
-        for (int i = 0; i < width; ++i)
-        {
-            float v = 0;
-            v += 0.1f * sin((i + shift) * 0.1f);       // NOLINT
-            v += 0.2f * sin((i + shift + 10) * 0.15f); // NOLINT
-            v += 0.1f * sin((i + shift) * 0.03f);      // NOLINT
-            v *= height;                               // NOLINT
-            v += 0.5f * height;                        // NOLINT
-            output[i] = static_cast<int>(v);
-        }
-        return output;
-    }
-    int shift = 0;
-};
-
-[[maybe_unused]] std::vector<int> triangle(int width, int height)
-{
-    std::vector<int> output(width);
-    for (int i = 0; i < width; ++i)
-    {
-        output[i] = i % (height - 4) + 2;
-    }
-    return output;
-}
 
 namespace monitor::ui
 {
-    // class CpuWidget : public ComponentBase
-    // {
-    // public:
-    //     CpuWidget(monitor::metrics::CpuMonitor &_monitor)
-    //         : monitor(_monitor) {}
-
-    //     Element Render() override
-    //     {
-    //         return window(text("CPU"), vbox({text("Total: " + std::to_string(monitor.getCpuTotalUsage())) | bold}));
-    //     }
-
-    // private:
-    //     monitor::metrics::CpuMonitor &monitor;
-    // };
-
-    class CpuWidget : public ftxui::ComponentBase
+    class CpuWidget : public ComponentBase
     {
     public:
-        explicit CpuWidget(monitor::metrics::CpuMonitor &monitor)
-            : monitor_(monitor) {}
+        explicit CpuWidget(CpuMonitor &monitor_) : monitor(monitor_) {}
 
-        ftxui::Element OnRender() override
+        Element OnRender() override
         {
-            float cpu = monitor_.getCpuTotalUsage();
+            double current_total_usage = monitor.getCpuTotalUsage();
+            cpu_usage_history = monitor.getCpuUsageHistory();
 
-            push_sample(cpu);
-
-            auto graph_fn = [this](int width, int height)
+            auto graphFunc = [this](int width, int height)
             {
-                std::vector<int> out(width, 0);
-
-                int n = (int)history_.size();
-                int start = n > width ? n - width : 0;
-
-                for (int x = 0; x < width; ++x)
-                {
-                    int idx = start + x;
-                    if (idx >= n)
-                        break;
-                    float v = history_[idx];
-                    int h = (int)(v / 100.f * height);
-                    if (h < 0)
-                        h = 0;
-                    if (h > height)
-                        h = height;
-                    out[x] = h;
-                }
-                return out;
-            };
-
-            return ftxui::window(
-                ftxui::text("CPU"),
-                ftxui::vbox({
-                    ftxui::text("Total: " + std::to_string((int)cpu) + "%") | ftxui::bold,
-                    ftxui::separator(),
-                    ftxui::graph(graph_fn) | ftxui::size(ftxui::HEIGHT, ftxui::GREATER_THAN, 6),
-                }));
-        }
-
-    private:
-        monitor::metrics::CpuMonitor &monitor_;
-        std::vector<float> history_;
-        static constexpr std::size_t kMax = 300;
-
-        void push_sample(float v)
-        {
-            history_.push_back(v);
-            if (history_.size() > kMax)
-                history_.erase(history_.begin());
-        }
-    };
-
-    class CpuWidget2 : public ftxui::ComponentBase
-    {
-    public:
-        explicit CpuWidget2(monitor::metrics::CpuMonitor &monitor_) : monitor(monitor_) {}
-
-        ftxui::Element OnRender() override
-        {
-            double total_usage = monitor.getCpuTotalUsage();
-            double num_cores = monitor.getNumCores();
-            cpu_usage_history.push_back(total_usage);
-
-            for (int coreIdx = 0; coreIdx < num_cores; coreIdx++)
-            {
-                double core_usage = monitor.getCpuCoreUsage(coreIdx);
-                core_usage_history[coreIdx].push_back(core_usage);
-            }
-
-            auto graph_fn = [this](int width, int height)
-            {
-                std::vector<int> out(width, 0);
+                vector_int out(width, 0);
 
                 int n = (int)cpu_usage_history.size();
                 int start = n > width ? n - width : 0;
@@ -152,67 +46,64 @@ namespace monitor::ui
                     if (idx >= n)
                         break;
                     double v = cpu_usage_history[idx];
-                    int h = (int)(v / 100.f * height);
+                    int h = static_cast<int>(std::round(v / 100.0 * (height - 1)));
                     if (h < 0)
                         h = 0;
-                    if (h > height)
-                        h = height;
+                    if (h >= height)
+                        h = height - 1;
                     out[x] = h;
                 }
                 return out;
             };
+            return window(
+                text("CPU"),
+                hbox({
+                    vbox({
+                        text("Total: " + std::to_string(current_total_usage) + "%") | bold,
+                        separator(),
+                        graph(graphFunc) | color(Color::RedLight),
+                    }) | xflex,
+                    separator(),
+                    vbox({
+                        text("Cores:") | bold,
+                        separator(),
 
-            return ftxui::window(
-                ftxui::text("CPU"),
-                ftxui::vbox({
-                    ftxui::text("Total: " + std::to_string(total_usage) + "%") | ftxui::bold,
-                    ftxui::separator(),
-                    ftxui::graph(graph_fn) | ftxui::size(ftxui::HEIGHT, ftxui::GREATER_THAN, 6),
-                }));
+                        vbox([this]() {
+                            Elements core_elems;
+                            int num_cores = monitor.getNumCores();
+                            for (int i = 0; i < num_cores; ++i)
+                            {
+                                int core_usage = (int)monitor.getCpuCoreUsage(i);
+                                core_elems.push_back(
+                                    text("Core " + std::to_string(i) + ": " + std::to_string(core_usage) + "%"));
+                            }
+                            return vbox(core_elems);
+                        }()),
+                    }) | size(WIDTH, EQUAL, 20)
+                }) | flex
+            );
         }
 
     private:
-        monitor::metrics::CpuMonitor &monitor;
-        std::vector<double> cpu_usage_history;
-        std::vector<std::vector<double>> core_usage_history;
+        CpuMonitor                 &monitor;
+        vector_double              cpu_usage_history;
+        std::vector<vector_double> core_usage_history;
     };
 }
 
-// int main()
-// {
 
-//     Graph my_graph;
-//     auto cpuMonitor = monitor::metrics::CpuMonitor(
-//         monitor::os::make_cpu_reader()
-//     );
 
-//     std::cout << platformInfo.getPlatformInfo() << std::endl;
+using namespace ftxui;
 
-//     // while(true){
-//     //     cpuMonitor.computeSnapshot();
-//     //     std::cout << "CPU total usage: " << cpuMonitor.getCpuTotalUsage() << "%" << std::endl << std::endl;
-//     //     std::cout << cpuMonitor << std::endl << std::endl;
-//     //     std::this_thread::sleep_for(std::chrono::seconds(2));
-//     // }
 
-//     return 0;
-// }
-
-void thread_function(monitor::Engine &engine, ftxui::ScreenInteractive &screen)
-{
-    for (;;)
-    {
-        engine.tick();
-        screen.RequestAnimationFrame();
-
-        std::cout << "HELLO " << std::endl;
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
-};
 
 int main()
 {
+    // For tests.
     int a;
+
+    std::cout << "Enter anything BUT 0 to start: " << std::endl;
+
     std::cin >> a;
     if (a == 0)
         return 0;
@@ -220,18 +111,25 @@ int main()
 
     // Not used, but still call make_platform_info so cppcheck doesnt yap about unused function
     auto platformInfo = monitor::metrics::SystemInfoProvider(
-        monitor::os::make_platform_info());
-
-    auto screen = ftxui::ScreenInteractive::Fullscreen();
-
+        monitor::os::make_platform_info()
+    );
+    
     monitor::Engine engine;
-
     auto &cpuMonitor = engine.getCpuMonitor();
-    auto cpuWidget = ftxui::Make<monitor::ui::CpuWidget>(cpuMonitor);
+        
+    auto screen = ScreenInteractive::Fullscreen();
+    
+    engine.ignition(screen);
 
-    std::thread engine_work(thread_function, std::ref(engine), std::ref(screen));
+    auto cpuWidget = Make<monitor::ui::CpuWidget>(cpuMonitor);
+    Component root = Renderer(cpuWidget, [cpuWidget] {
+        return hbox({
+            cpuWidget->Render() | ftxui::flex,
+        }) | ftxui::flex;
+    });
 
-    screen.Loop(cpuWidget);
+    screen.Loop(root);
+    engine.shutdown();
 
     return 0;
 }
