@@ -76,7 +76,7 @@ add_executable(${MAIN_EXECUTABLE_NAME}
 
 # NOTE: Add all defined targets (e.g. executables, libraries, etc. )
 # NOTE: RUN_SANITIZERS is optional, if it's not present it will default to true
-set_compiler_flags(RUN_SANITIZERS TRUE TARGET_NAMES ${MAIN_EXECUTABLE_NAME})
+set_compiler_flags(RUN_SANITIZERS FALSE TARGET_NAMES ${MAIN_EXECUTABLE_NAME})
 # set_compiler_flags(TARGET_NAMES ${MAIN_EXECUTABLE_NAME} ${FOO} ${BAR})
 # where ${FOO} and ${BAR} represent additional executables or libraries
 # you want to compile with the set compiler flags
@@ -124,6 +124,11 @@ file(GLOB_RECURSE COMMON_SRCS CONFIGURE_DEPENDS
   ${CMAKE_SOURCE_DIR}/src/ui/*.cpp
 )
 
+file(GLOB_RECURSE CORE_SRCS CONFIGURE_DEPENDS
+  ${CMAKE_SOURCE_DIR}/src/core/*.cpp
+  ${CMAKE_SOURCE_DIR}/src/metrics/*.cpp
+)
+
 file(GLOB READER_MAC_SRCS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/readers/mac/*.cpp)
 file(GLOB READER_WIN_SRCS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/readers/win/*.cpp)
 file(GLOB READER_LINUX_SRCS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/readers/linux/*.cpp)
@@ -136,3 +141,19 @@ target_sources(${MAIN_EXECUTABLE_NAME} PRIVATE
 )
 
 
+add_executable(dummyRuntimeCheck tests/dummyRuntimeCheck.cpp)
+
+target_include_directories(dummyRuntimeCheck PRIVATE
+  ${CMAKE_SOURCE_DIR}/include
+  ${CMAKE_SOURCE_DIR}/src
+)
+
+# core + platform readers (NO UI, NO FTXUI)
+target_sources(dummyRuntimeCheck PRIVATE ${CORE_SRCS})
+target_sources(dummyRuntimeCheck PRIVATE
+  $<$<PLATFORM_ID:Darwin>:${READER_MAC_SRCS}>
+  $<$<PLATFORM_ID:Windows>:${READER_WIN_SRCS}>
+  $<$<PLATFORM_ID:Linux>:${READER_LINUX_SRCS}>
+)
+
+set_compiler_flags(RUN_SANITIZERS TRUE TARGET_NAMES dummyRuntimeCheck)
