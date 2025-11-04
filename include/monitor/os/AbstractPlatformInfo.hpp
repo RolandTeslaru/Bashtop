@@ -43,19 +43,18 @@ namespace monitor::os
         virtual std::string getHostname()      const { return hostname; }
 
         AbstractPlatformInfo(const AbstractPlatformInfo &absInfo)
-        {
-            cpu_name        = absInfo.cpu_name;
-            arch            = absInfo.arch;
-            logical_cpus    = absInfo.logical_cpus;
-            physical_cpus   = absInfo.physical_cpus;
-            mem_total_bytes = absInfo.mem_total_bytes;
-            page_size_bytes = absInfo.page_size_bytes;
-            os_version      = absInfo.os_version;
-            os_build        = absInfo.os_build;
-            kernel_release  = absInfo.kernel_release;
-            model_id        = absInfo.model_id;
-            hostname        = absInfo.hostname;
-        }
+        :  cpu_name(absInfo.cpu_name),
+           arch(absInfo.arch),
+           logical_cpus(absInfo.logical_cpus),
+           physical_cpus(absInfo.physical_cpus),
+           mem_total_bytes(absInfo.mem_total_bytes),
+           page_size_bytes(absInfo.page_size_bytes),
+           os_version(absInfo.os_version),
+           os_build(absInfo.os_build),
+           kernel_release(absInfo.kernel_release),
+           model_id(absInfo.model_id),
+           hostname(absInfo.hostname)
+        {}
 
         AbstractPlatformInfo &operator=(const AbstractPlatformInfo &absInfo)
         {
