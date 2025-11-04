@@ -1,4 +1,4 @@
-namespace monitor::widgets {
+namespace monitor::ui {
     class MemWidget {
 
     };

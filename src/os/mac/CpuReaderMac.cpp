@@ -11,6 +11,8 @@
 #include <mach/processor_info.h>
 #include <mach/mach.h>
 
+#include "monitor/ansi.hpp"
+
 using CpuRawSample = monitor::types::cpu::RawSample;
 using CpuCoreTicks = monitor::types::cpu::CoreTicks;
 
@@ -55,6 +57,10 @@ namespace monitor::os::mac{
                 );
 
                 return true;
+            }
+
+            void print(std::ostream& os) const override {
+                os << monitor::ansi::BOLD << monitor::ansi::BLUE << "CpuReaderMac" << monitor::ansi::RESET << std::endl;
             }
 
     private:

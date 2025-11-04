@@ -14,21 +14,25 @@
 namespace monitor {
     class Engine {
         private:
-            monitor::metrics::CpuMonitor cpuMonitor;
+            std::shared_ptr<monitor::metrics::CpuMonitor> cpuMonitor; 
             
-            monitor::metrics::MemMonitor memMonitor;
+            std::shared_ptr<monitor::metrics::MemMonitor> memMonitor;
 
         public:
             Engine();
-            ~Engine() = default;
-
             Engine(
                 std::unique_ptr<os::AbstractCpuReader> cpuReader,
                 std::unique_ptr<os::AbstractMemReader> memReader
             );
+            ~Engine() = default;
+            
+            Engine(const Engine &other);
+            Engine& operator=(const Engine &other);
 
-            monitor::metrics::CpuMonitor& getCpuMonitor();
-            [[maybe_unused]] monitor::metrics::MemMonitor& getMemMonitor();
+            friend std::ostream& operator<<(std::ostream& os, const Engine& engine);
+
+            std::shared_ptr<monitor::metrics::CpuMonitor> getCpuMonitor();
+            [[maybe_unused]] std::shared_ptr<monitor::metrics::MemMonitor> getMemMonitor();
 
             // Starts worker thread, (startEngineThread)
             void ignition(ftxui::ScreenInteractive &screen);

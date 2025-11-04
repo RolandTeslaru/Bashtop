@@ -10,7 +10,7 @@
 
 #include "monitor/os/AbstractCpuReader.hpp"
 #include "monitor/types/Cpu.hpp"
-
+#include "monitor/ansi.hpp"
 
 using CpuRawSample = monitor::types::cpu::RawSample;
 using CpuCoreTicks = monitor::types::cpu::CoreTicks;
@@ -97,6 +97,10 @@ namespace monitor::os::linux {
                 out.timestamp_ns = this->toNanoseconds(now);
 
                 return true;
+            }
+
+            void print(std::ostream& os) const override {
+                os << monitor::ansi::BOLD << monitor::ansi::BLUE << "CpuReaderLinux: " << monitor::ansi::RESET << std::endl;
             }
 
         private:

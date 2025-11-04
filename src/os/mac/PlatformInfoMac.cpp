@@ -17,24 +17,11 @@
 namespace monitor::os::mac {
 
 class PlatformInfoMac final : public monitor::os::AbstractPlatformInfo {
-    private:
-        std::string cpu_name;
-        std::string cpu_architecture;
-        uint32_t    logical_cpus = 0;
-        uint32_t    physical_cpus = 0;
-        uint64_t    total_memory_bytes = 0;
-        uint64_t    page_size_bytes = 0;
-        std::string os_version;
-        std::string os_build;
-        std::string kernel_release;
-        std::string model_identifier;
-        std::string host_name;
-
     public:
         PlatformInfoMac() {
             readSysString("machdep.cpu.brand_string", cpu_name);
 
-            readFromUnixObj(cpu_architecture, kernel_release);
+            readFromUnixObj(arch, kernel_release);
 
             int32_t logical = 0;
             if (readSysValue("hw.logicalcpu", &logical, sizeof logical) && logical > 0)
@@ -48,7 +35,7 @@ class PlatformInfoMac final : public monitor::os::AbstractPlatformInfo {
 
             uint64_t memoryBytes = 0;
             if (readSysValue("hw.memsize", &memoryBytes, sizeof memoryBytes))
-                total_memory_bytes = memoryBytes;
+                mem_total_bytes = memoryBytes;
 
             int32_t pageSize = 0;
             if (readSysValue("hw.pagesize", &pageSize, sizeof pageSize) && pageSize > 0)
@@ -57,30 +44,13 @@ class PlatformInfoMac final : public monitor::os::AbstractPlatformInfo {
 
             readSysString("kern.osproductversion", os_version);
             readSysString("kern.osversion", os_build);
-            readSysString("hw.model", model_identifier);
-            if (model_identifier.empty()) {
-                readSysString("hw.machine", model_identifier);
+            readSysString("hw.model", model_id);
+            if (model_id.empty()) {
+                readSysString("hw.machine", model_id);
             }
 
-            host_name = readHostname();
+            hostname = readHostname();
         }
-
-        ~PlatformInfoMac() override = default;
-
-        PlatformInfoMac(const PlatformInfoMac &) = default;
-        PlatformInfoMac &operator=(const PlatformInfoMac &) = default;
-
-        std::string getCpuName()        const override { return cpu_name; }
-        std::string getArch()           const override { return cpu_architecture; }
-        uint32_t    getLogicalCpus()    const override { return logical_cpus; }
-        uint32_t    getPhysicalCpus()   const override { return physical_cpus; }
-        uint64_t    getMemTotalBytes()  const override { return total_memory_bytes; }
-        uint64_t    getPageSizeBytes()  const override { return page_size_bytes; }
-        std::string getOsVersion()      const override { return os_version; }
-        std::string getOsBuild()        const override { return os_build; }
-        std::string getKernelRelease()  const override { return kernel_release; }
-        std::string getModelId()        const override { return model_identifier; }
-        std::string getHostname()       const override { return host_name; }
 
     private:
         static void readFromUnixObj(std::string &arch, std::string &release) {

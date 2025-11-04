@@ -9,6 +9,8 @@ namespace monitor::metrics {
             explicit MemMonitor(std::unique_ptr<monitor::os::AbstractMemReader> reader);
             ~MemMonitor();
 
+            friend std::ostream& operator<<(std::ostream& os, const MemMonitor& mon);
+
         private:
             std::unique_ptr<monitor::os::AbstractMemReader> memReader;
     };

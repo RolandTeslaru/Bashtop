@@ -1,35 +1,92 @@
 #include <thread>
+#include <sstream>
 
 #include "monitor/metrics/CpuMonitor.hpp"
 #include "monitor/metrics/MemMonitor.hpp"
 #include "monitor/os/Factory.hpp"
 #include "monitor/core/Engine.hpp"
 #include <ftxui/component/screen_interactive.hpp>
+#include <ostream>
 
+#include "monitor/ansi.hpp"
 
 namespace monitor {
+    // Normal contrcutor, creates the readers and monitors itself
     Engine::Engine()
-    : cpuMonitor(monitor::os::make_cpu_reader()),
-        memMonitor(monitor::os::make_mem_reader())
+    :   cpuMonitor(std::make_shared<metrics::CpuMonitor>(os::make_cpu_reader())),
+        memMonitor(std::make_shared<metrics::MemMonitor>(os::make_mem_reader()))
     {}
 
+
+
+    // Constructor with custom readers
     Engine::Engine(
         std::unique_ptr<os::AbstractCpuReader> cpuReader,
         std::unique_ptr<os::AbstractMemReader> memReader
     )
-    :   cpuMonitor(std::move(cpuReader)),
-        memMonitor(std::move(memReader))
+    :   cpuMonitor(std::make_shared<metrics::CpuMonitor>(std::move(cpuReader))),
+        memMonitor(std::make_shared<metrics::MemMonitor>(std::move(memReader)))
     {}
 
-    void Engine::tick(){
-        this->cpuMonitor.computeSnapshot();
+
+
+    // Copy constructor
+    Engine::Engine(const Engine& other){
+        this->cpuMonitor = other.cpuMonitor;
+        this->memMonitor = other.memMonitor;
     }
 
-    monitor::metrics::CpuMonitor& Engine::getCpuMonitor(){
+
+
+    // Copy assignment operator
+    Engine &Engine::operator=(const Engine &other){
+        if(this == &other)
+            return *this;
+
+        this->cpuMonitor = other.cpuMonitor;
+        this->memMonitor = other.memMonitor;
+
+        return *this;
+    }
+
+
+
+    std::ostream& operator<<(std::ostream& os, const Engine& engine){
+        os << monitor::ansi::BOLD << monitor::ansi::GREEN << "Engine: " << monitor::ansi::RESET << std::endl;
+
+        // Indent CpuMonitor output
+        std::ostringstream tempCpu;
+        tempCpu << *(engine.cpuMonitor); // deref shared ptr
+
+        std::string line;
+        std::istringstream streamCpu(tempCpu.str());
+        while (std::getline(streamCpu, line)) {
+            os << "  " << line << std::endl;
+        }
+
+        // Indent MemMonitor output
+        std::ostringstream tempMem;
+        tempMem << *(engine.memMonitor); // deref shared ptr
+        
+        std::istringstream streamMem(tempMem.str());
+        while (std::getline(streamMem, line)) {
+            os << "  " << line << std::endl;
+        }
+
+        return os;
+    }
+
+
+
+    void Engine::tick(){
+        this->cpuMonitor->computeSnapshot();
+    }
+
+    std::shared_ptr<monitor::metrics::CpuMonitor> Engine::getCpuMonitor(){
         return this->cpuMonitor;
     }
 
-    [[maybe_unused]] monitor::metrics::MemMonitor& Engine::getMemMonitor(){
+    [[maybe_unused]] std::shared_ptr<monitor::metrics::MemMonitor> Engine::getMemMonitor(){
         return this->memMonitor;
     }
 

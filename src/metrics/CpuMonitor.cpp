@@ -4,8 +4,11 @@
 #include <memory>
 #include <algorithm>
 
+#include <iomanip>
+
 #include "monitor/metrics/CpuMonitor.hpp"
 #include "monitor/types/Cpu.hpp"
+#include "monitor/ansi.hpp"
 
 using size_t            = std::size_t;
 
@@ -26,9 +29,29 @@ namespace monitor::metrics {
 
         num_cores = sample.per_core.size(); // get the number of cores from an initial dummy sample
     }
+    CpuMonitor::~CpuMonitor(){}
 
-    CpuMonitor::~CpuMonitor(){
+    std::ostream& operator<<(std::ostream& os, const CpuMonitor& mon){
+        os << monitor::ansi::BOLD << monitor::ansi::CYAN << "CpuMonitor: " << monitor::ansi::RESET << std::endl;
+        os << "  Number of Cores: "        << mon.num_cores << std::endl;
+        os << "  Latest Snapshot: "        << std::endl;
+        os << "    Window (nanoseconds): " << mon.latestSnapshot.window_ns        << std::endl;
+        os << "    Total Usage (%): "      << mon.latestSnapshot.total_percentage << std::endl;
+        os << "  Reader: "                 << *mon.cpuReader; // deref unique ptr
+        os << "  Per Core Usage: ";
+        if(mon.latestSnapshot.per_core_percentage.empty()) {
+            os << "No usage because only the dummy sample in the constructor was taken" << std::endl;
+            return os;
+        }
+        os << std::endl;
 
+        const int labelWidth = 10; // width for the core label column
+
+        for(size_t i = 0; i < mon.latestSnapshot.per_core_percentage.size(); ++i) {
+            os << "    " << std::left << std::setw(labelWidth) << ("core " + std::to_string(i) + ":") << " " << mon.latestSnapshot.per_core_percentage[i] << "%" << std::endl;
+        }
+        os << std::endl;
+        return os;
     }
 
     int CpuMonitor::getNumCores(){

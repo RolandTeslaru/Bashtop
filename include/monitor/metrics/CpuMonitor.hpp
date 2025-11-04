@@ -15,25 +15,13 @@ namespace monitor::metrics {
         public:
             explicit CpuMonitor(std::unique_ptr<AbstractCpuReader> reader);
             ~CpuMonitor();
+            
+            friend std::ostream& operator<<(std::ostream& os, const CpuMonitor& mon);
 
-            void computeSnapshot();
-
+            void   computeSnapshot();
+            int    getNumCores();
             double getCpuTotalUsage();
             double getCpuCoreUsage(const unsigned int coreIdx);
-            int getNumCores();
-
-            friend std::ostream& operator<<(std::ostream& os, const CpuMonitor& mon) 
-            {
-                os << "snapshot: "         << std::endl
-                   << "windowNs= "         << mon.latestSnapshot.window_ns << std::endl
-                   << "total_percentage= " << mon.latestSnapshot.total_percentage << std::endl;
-
-                for(size_t i = 0; i < mon.latestSnapshot.per_core_percentage.size(); i++)
-                    os << "core" << i << " = " << mon.latestSnapshot.per_core_percentage[i] << "%" << std::endl;
-                
-                return os;
-            }
-
             const vector_double getCpuUsageHistory();
             [[maybe_unused]] const vector_double getCoreUsageHistory(const unsigned int coreIdx);
 

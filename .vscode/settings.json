@@ -65,7 +65,8 @@
         "ostream": "cpp",
         "format": "cpp",
         "xiosbase": "cpp",
-        "xutility": "cpp"
+        "xutility": "cpp",
+        "atomic": "cpp"
     },
     "C_Cpp.errorSquiggles": "enabled"
 }

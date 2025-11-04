@@ -7,8 +7,19 @@ namespace monitor::os {
 
     class AbstractCpuReader {
         public:
+            AbstractCpuReader() = default;
             virtual ~AbstractCpuReader() = default;
             
+            AbstractCpuReader(const AbstractCpuReader& other) = default;
+            AbstractCpuReader& operator=(const AbstractCpuReader& other) = default;
+
+            // cannot make the operator<< pure virtual, so we use this print helper.
+            virtual void print(std::ostream& os) const = 0;
+            friend std::ostream& operator<<(std::ostream& os, const AbstractCpuReader& reader) { 
+                reader.print(os);
+                return os;
+            }
+
             // Reads ticks from the os.
             virtual bool sample(
                 monitor::types::cpu::RawSample& out

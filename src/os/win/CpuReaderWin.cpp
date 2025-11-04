@@ -13,6 +13,7 @@
 
 #include "monitor/os/AbstractCpuReader.hpp"
 #include "monitor/types/Cpu.hpp"
+#include "monitor/ansi.hpp"
 
 // The recommended win32 api only exposes total cpu usage, not per core.
 // Therefore we use the lower level NT API from ntdll.dll
@@ -67,6 +68,11 @@ namespace monitor::os::win
 
                 return true;
             }
+
+            void print(std::ostream& os) const override {
+                os << monitor::ansi::BOLD << monitor::ansi::BLUE << "CpuReaderWin" << monitor::ansi::RESET << std::endl;
+            }
+            
         private:
 
             // loads the NtQuerySystemInformation function from ntdll.dll
