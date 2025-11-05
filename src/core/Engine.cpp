@@ -50,6 +50,10 @@ namespace monitor {
     }
 
 
+    Engine::~Engine(){
+        this->shutdown();
+    }
+
 
     std::ostream& operator<<(std::ostream& os, const Engine& engine){
         os << monitor::ansi::BOLD << monitor::ansi::GREEN << "Engine: " << monitor::ansi::RESET << std::endl;
