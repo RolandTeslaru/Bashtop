@@ -24,7 +24,7 @@ namespace monitor {
                 std::unique_ptr<os::AbstractCpuReader> cpuReader,
                 std::unique_ptr<os::AbstractMemReader> memReader
             );
-            ~Engine() = default;
+            ~Engine();
             
             Engine(const Engine &other);
             Engine& operator=(const Engine &other);
