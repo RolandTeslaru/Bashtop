@@ -9,9 +9,9 @@
 #include "monitor/os/Factory.hpp"
 #include "monitor/core/Engine.hpp"
 
-using CpuMonitor = monitor::metrics::CpuMonitor;
+using CpuMonitor    = monitor::metrics::CpuMonitor;
 using vector_double = std::vector<double>;
-using vector_int = std::vector<int>;
+using vector_int    = std::vector<int>;
 
 using namespace ftxui;
 

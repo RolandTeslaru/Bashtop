@@ -14,7 +14,42 @@
 namespace monitor::os::linux {
     class MemReader final : public monitor::os::AbstractMemReader {
         public:
-            [[maybe_unused]] bool sample() override{
+            bool sample(monitor::types::mem::RawSample& out) override {
+                std::ifstream file("/proc/meminfo");
+                if (!file.is_open()) {
+                    return false;
+                }
+
+                std::string line;
+                std::string key;
+                uint64_t value;
+                std::string unit;
+
+                uint64_t memTotal = 0;
+                uint64_t memFree = 0;
+                uint64_t swapTotal = 0;
+                uint64_t swapFree = 0;
+
+                while (std::getline(file, line)) {
+                    std::stringstream ss(line);
+                    ss >> key >> value >> unit;
+                    
+                    if (key == "MemTotal:") memTotal = value;
+                    else if (key == "MemFree:") memFree = value;
+                    else if (key == "SwapTotal:") swapTotal = value;
+                    else if (key == "SwapFree:") swapFree = value;
+                }
+
+                // Convert kB to Bytes
+                out.total = memTotal * 1024;
+                out.free = memFree * 1024;
+                // Consistent with Mac implementation: Used = Total - Free (includes cache)
+                out.used = (memTotal - memFree) * 1024;
+
+                out.swapTotal = swapTotal * 1024;
+                out.swapFree = swapFree * 1024;
+                out.swapUsed = (swapTotal - swapFree) * 1024;
+
                 return true;
             }
 

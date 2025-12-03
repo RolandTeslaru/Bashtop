@@ -11,7 +11,7 @@
 #include "monitor/ansi.hpp"
 
 namespace monitor {
-    // Normal contrcutor, creates the readers and monitors itself
+    // Normal constructor, creates the readers and monitors itself
     Engine::Engine()
     :   cpuMonitor(std::make_shared<metrics::CpuMonitor>(os::make_cpu_reader())),
         memMonitor(std::make_shared<metrics::MemMonitor>(os::make_mem_reader()))

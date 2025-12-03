@@ -1,5 +1,6 @@
 #pragma once
 #include <chrono>
+#include "monitor/types/Mem.hpp"
 
 namespace monitor::os {    
 
@@ -19,8 +20,9 @@ namespace monitor::os {
             }
 
             
-            virtual bool sample() = 0;      
+            virtual bool sample(
+                monitor::types::mem::RawSample& out
+            ) = 0;      
 
     };
-
 }

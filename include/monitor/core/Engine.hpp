@@ -34,7 +34,7 @@ namespace monitor {
             std::shared_ptr<monitor::metrics::CpuMonitor> getCpuMonitor();
             [[maybe_unused]] std::shared_ptr<monitor::metrics::MemMonitor> getMemMonitor();
 
-            // Starts worker thread, (startEngineThread)
+            // Starts worker thread, (startEngineThread) (ignition sounds cooler)
             void ignition(ftxui::ScreenInteractive &screen);
             // (stopEngineThread)
             void shutdown();
@@ -47,4 +47,4 @@ namespace monitor {
             void threadFunction(ftxui::ScreenInteractive &screen);
     };
 
-} // namespace monitor
+} 
