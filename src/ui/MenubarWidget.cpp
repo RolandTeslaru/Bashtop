@@ -22,8 +22,15 @@ namespace monitor::ui
     MenubarWidget &MenubarWidget::operator=(const MenubarWidget &widget)
     {
         if (this == &widget)
-            return *this;
+            return *this; 
 
+        this->menuGroups     = widget.menuGroups;
+        this->menubar        = widget.menubar;
+        this->menubarGroups  = widget.menubarGroups;
+        this->selectedGroup_ = widget.selectedGroup_;
+        this->selectedItem_  = widget.selectedItem_;
+        this->menuOpen_      = widget.menuOpen_;
+        
         return *this;
     }
 

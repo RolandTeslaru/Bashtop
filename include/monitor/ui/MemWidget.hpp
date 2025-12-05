@@ -38,7 +38,7 @@ namespace monitor::ui {
             // Private Helpers
             // ====================================================================
             ftxui::Element RenderSection(
-                std::string title,
+			const std::string& title,
                 uint64_t total, uint64_t used, uint64_t free,
                 ftxui::Color bar_color
             );

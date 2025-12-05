@@ -54,16 +54,16 @@ namespace monitor::ui
             snap.total,
             snap.used,
             snap.free,
-            (snap.used / static_cast<double>(snap.total)) < 0.7 ? Color::GreenLight :
-            ((snap.used / static_cast<double>(snap.total)) < 0.9 ? Color::YellowLight : Color::RedLight)
+            (snap.used / static_cast<double>(snap.total)) < 0.6 ? Color::GreenLight :
+            ((snap.used / static_cast<double>(snap.total)) < 0.8 ? Color::YellowLight : Color::RedLight)
         );
         Element swap_graph = RenderSection(
             "Swap",
             snap.swapTotal,
             snap.swapUsed,
             snap.swapFree,
-            (snap.swapUsed / static_cast<double>(snap.swapTotal)) < 0.7 ? Color::GreenLight :
-            ((snap.swapUsed / static_cast<double>(snap.swapTotal)) < 0.9 ? Color::YellowLight : Color::RedLight)
+            (snap.swapUsed / static_cast<double>(snap.swapTotal)) < 0.6 ? Color::GreenLight :
+            ((snap.swapUsed / static_cast<double>(snap.swapTotal)) < 0.8 ? Color::YellowLight : Color::RedLight)
         );
 
         return window(
@@ -79,7 +79,7 @@ namespace monitor::ui
 
     // PRIVATE
 
-    std::string HumanGiB(uint64_t bytes) {
+    std::string toGB(uint64_t bytes) {
         double gib = bytes / 1024.0 / 1024.0 / 1024.0;
         std::ostringstream oss;
         oss << std::fixed << std::setprecision(2) << gib << " GB";
@@ -92,18 +92,18 @@ namespace monitor::ui
             text(label) | bold | size(WIDTH, EQUAL, 12),
             gauge(ratio) | ftxui::color(color) | flex,
             separator(),
-            text(HumanGiB(value)) | size(WIDTH, EQUAL, 9),
+            text(toGB(value)) | size(WIDTH, EQUAL, 9),
             text(std::to_string(int(ratio * 100)) + "%")
         });
     }
 
-    Element MemWidget::RenderSection(
-        std::string title,
+        Element MemWidget::RenderSection(
+		const std::string& title,
         uint64_t total, uint64_t used, uint64_t free,
         Color bar_color
     ) {
         return vbox({
-            text(title + ": " + HumanGiB(total)) | bold,
+            text(title + ": " + toGB(total)) | bold,
             separator(),
             RenderBar("Used:", used, total, bar_color),
         });
