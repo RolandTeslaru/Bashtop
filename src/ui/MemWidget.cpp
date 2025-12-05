@@ -86,18 +86,20 @@ namespace monitor::ui
         return oss.str();
     }
 
-    Element MemWidget::RenderBar(std::string label, uint64_t value, uint64_t total, Color color) {
+    Element MemWidget::RenderBar(
+        std::string label, uint64_t value, uint64_t total, Color color, uint64_t free) {
         double ratio = total ? double(value) / total : 0.0;
         return hbox({
             text(label) | bold | size(WIDTH, EQUAL, 12),
             gauge(ratio) | ftxui::color(color) | flex,
             separator(),
             text(toGB(value)) | size(WIDTH, EQUAL, 9),
-            text(std::to_string(int(ratio * 100)) + "%")
+            text(std::to_string(int(ratio * 100)) + "%") | size(WIDTH, EQUAL, 5),
+            text(" Free: " + toGB(free)) | size(WIDTH, EQUAL, 15),
         });
     }
 
-        Element MemWidget::RenderSection(
+    Element MemWidget::RenderSection(
 		const std::string& title,
         uint64_t total, uint64_t used, uint64_t free,
         Color bar_color
@@ -105,7 +107,7 @@ namespace monitor::ui
         return vbox({
             text(title + ": " + toGB(total)) | bold,
             separator(),
-            RenderBar("Used:", used, total, bar_color),
+            RenderBar("Used:", used, total, bar_color, free),
         });
     }
 }

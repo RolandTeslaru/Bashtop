@@ -54,6 +54,7 @@ namespace monitor::ui
             ftxui::Element menubar;
             ftxui::Element menubarGroups;
 
+            
             int  selectedGroup_ = 0;
             int  selectedItem_  = 0;
             bool menuOpen_      = false;

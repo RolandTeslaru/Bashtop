@@ -47,7 +47,7 @@ namespace monitor::os::mac {
                             (uint64_t)vm_stats.wire_count) * page_size;
 
                 // Get Swap stats
-                struct xsw_usage vmusage = {0};
+                struct xsw_usage vmusage{};
                 size_t size = sizeof(vmusage);
                 if (sysctlbyname("vm.swapusage", &vmusage, &size, NULL, 0) == 0) {
                     out.swapTotal = vmusage.xsu_total;

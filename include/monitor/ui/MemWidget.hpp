@@ -45,7 +45,8 @@ namespace monitor::ui {
             ftxui::Element RenderBar(
                 std::string label,
                 uint64_t value, uint64_t total,
-                ftxui::Color color
+                ftxui::Color color,
+                uint64_t free = 0
             );
 
             // ====================================================================
