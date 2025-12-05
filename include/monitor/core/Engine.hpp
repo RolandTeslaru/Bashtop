@@ -13,38 +13,51 @@
 
 namespace monitor {
     class Engine {
-        private:
-            std::shared_ptr<monitor::metrics::CpuMonitor> cpuMonitor; 
-            
-            std::shared_ptr<monitor::metrics::MemMonitor> memMonitor;
-
         public:
+            // ====================================================================
+            // Constructor / Destructor
+            // ====================================================================
             Engine();
             Engine(
                 std::unique_ptr<os::AbstractCpuReader> cpuReader,
                 std::unique_ptr<os::AbstractMemReader> memReader
             );
             ~Engine();
-            
+
+            // ====================================================================
+            // Operator Overloads
+            // ====================================================================
             Engine(const Engine &other);
             Engine& operator=(const Engine &other);
-
             friend std::ostream& operator<<(std::ostream& os, const Engine& engine);
 
+            // ====================================================================
+            // Public Interface
+            // ====================================================================
             std::shared_ptr<monitor::metrics::CpuMonitor> getCpuMonitor();
             [[maybe_unused]] std::shared_ptr<monitor::metrics::MemMonitor> getMemMonitor();
 
-            // Starts worker thread, (startEngineThread) (ignition sounds cooler)
+            // Starts worker thread (ignition sounds cooler)
             void ignition(ftxui::ScreenInteractive &screen);
-            // (stopEngineThread)
+            // Stops worker thread
             void shutdown();
-            
+
             void tick();
 
         private:
-            std::atomic<bool> isThreadRunning = false;
-            std::thread       engineThread;
+            // ====================================================================
+            // Private Helpers
+            // ====================================================================
             void threadFunction(ftxui::ScreenInteractive &screen);
+
+            // ====================================================================
+            // Member Variables
+            // ====================================================================
+            std::shared_ptr<monitor::metrics::CpuMonitor> cpuMonitor;
+            std::shared_ptr<monitor::metrics::MemMonitor> memMonitor;
+
+            std::atomic<bool> isThreadRunning = false;
+            std::thread engineThread;
     };
 
 } 

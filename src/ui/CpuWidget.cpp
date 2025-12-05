@@ -13,12 +13,15 @@ using namespace ftxui;
 
 namespace monitor::ui
 {
+    // Constructor
     CpuWidget::CpuWidget(CpuMonitor &monitor_) : monitor(monitor_) {}
 
+    // Copy constructor
     CpuWidget::CpuWidget(const CpuWidget &widget)
         : ComponentBase(), monitor(widget.monitor), cpu_usage_history(widget.cpu_usage_history)
     {}
 
+    // Copy assignment operator
     CpuWidget &CpuWidget::operator=(const CpuWidget &widget)
     {
         if (this == &widget)
@@ -29,6 +32,7 @@ namespace monitor::ui
         return *this;
     }
 
+    // printing CpuWidget state
     std::ostream &operator<<(std::ostream &os, const CpuWidget &widget)
     {
         os << monitor::ansi::BOLD << monitor::ansi::GREEN << "CpuWidget: " << monitor::ansi::RESET << std::endl;
@@ -48,6 +52,43 @@ namespace monitor::ui
         }
 
         return os;
+    }
+
+    Element CpuWidget::OnRender()
+    {
+        double current_total_usage = monitor.getCpuTotalUsage();
+        cpu_usage_history = monitor.getCpuUsageHistory();
+
+        return window(
+            text("CPU") | bold | ftxui::color(ftxui::Color::RedLight),
+            hbox({
+                vbox({
+                    text("Total: " + std::to_string(current_total_usage) + "%") | bold,
+                    separator(),
+                    graph(
+                        [this](int width, int height) { return this->graphTotalUsage(width, height); }
+                    ) | color(Color::RedLight),
+                }) | xflex,
+                separator(),
+                vbox({
+                    text("Cores:") | bold,
+                    separator(),
+
+                    vbox([this]() {
+                        Elements core_elems;
+                        int num_cores = monitor.getNumCores();
+                        for (int i = 0; i < num_cores; ++i)
+                        {
+                            int core_usage = (int)monitor.getCpuCoreUsage(i);
+                            core_elems.push_back(
+                                text("Core " + std::to_string(i) + ": " + std::to_string(core_usage) + "%"));
+                        }
+                        return vbox(core_elems);
+                    }()),
+                }) | size(WIDTH, EQUAL, 20)
+            }) | flex
+
+        ) | ftxui::color(ftxui::Color::RedLight);
     }
 
     std::vector<int> CpuWidget::graphTotalUsage(int width, int height) {
