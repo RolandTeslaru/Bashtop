@@ -39,6 +39,11 @@ using Nanoseconds  = std::chrono::nanoseconds;
 namespace monitor::os::linux {
     class CpuReader final : public monitor::os::AbstractCpuReader {
         public:
+
+            AbstractCpuReader* clone() const override {
+                return new CpuReader(*this);
+            }
+
             void sample(CpuRawSample& out) override {
                 // std::cout << "CpuReaderLinux: sampling /proc/stat" << std::endl;
 

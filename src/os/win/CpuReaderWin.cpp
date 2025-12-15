@@ -36,6 +36,10 @@ namespace monitor::os::win
     class CpuReader final : public monitor::os::AbstractCpuReader
     {
         public:
+            AbstractCpuReader* clone() const override {
+                return new CpuReader(*this);
+            }
+
             void sample(CpuRawSample &out) override
             {
                 DWORD logical_cpus = GetActiveProcessorCount(ALL_PROCESSOR_GROUPS);

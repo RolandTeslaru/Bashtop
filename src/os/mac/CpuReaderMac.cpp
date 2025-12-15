@@ -24,6 +24,10 @@ using Nanoseconds  = std::chrono::nanoseconds;
 namespace monitor::os::mac{
     class CpuReader final : public monitor::os::AbstractCpuReader{
         public:
+            AbstractCpuReader* clone() const override {
+                return new CpuReader(*this);
+            }
+
             void sample(CpuRawSample &out) override{
 
                 natural_t cpuCount = 0;

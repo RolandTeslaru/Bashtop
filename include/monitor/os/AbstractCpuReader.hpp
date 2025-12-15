@@ -7,10 +7,22 @@ namespace monitor::os {
 
     class AbstractCpuReader {
         public:
+            // ====================================================================
+            // Constructor / Destructor
+            // ====================================================================
             AbstractCpuReader() = default;
             virtual ~AbstractCpuReader() = default;
             
+            // ====================================================================
+            // Copy constructyor
+            // ====================================================================
             AbstractCpuReader(const AbstractCpuReader& other) = default;
+
+            virtual AbstractCpuReader* clone() const = 0;
+
+            // ====================================================================
+            // Operator Overloads
+            // ====================================================================
             AbstractCpuReader& operator=(const AbstractCpuReader& other) = default;
 
             // cannot make the operator<< pure virtual, so we use this print helper.
