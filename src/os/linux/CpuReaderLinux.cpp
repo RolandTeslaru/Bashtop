@@ -11,6 +11,7 @@
 #include "monitor/os/AbstractCpuReader.hpp"
 #include "monitor/types/Cpu.hpp"
 #include "monitor/ansi.hpp"
+#include "monitor/exceptions/SampleExceptions.hpp"
 
 using CpuRawSample = monitor::types::cpu::RawSample;
 using CpuCoreTicks = monitor::types::cpu::CoreTicks;
@@ -38,17 +39,13 @@ using Nanoseconds  = std::chrono::nanoseconds;
 namespace monitor::os::linux {
     class CpuReader final : public monitor::os::AbstractCpuReader {
         public:
-            bool sample(CpuRawSample& out) override {
+            void sample(CpuRawSample& out) override {
                 // std::cout << "CpuReaderLinux: sampling /proc/stat" << std::endl;
 
                 std::ifstream f("/proc/stat");
                 if(!f){
-                    // std::cerr << "CpuReaderLinux: failed to open /proc/stat" << std::endl;
-                    return false;
+                    throw monitor::exceptions::CpuSampleException("Failed to open /proc/stat");
                 } 
-                // else {
-                //     std::cout << "CpuReaderLinux: successfully opened /proc/stat" << std::endl;
-                // }
 
                 out.per_core.clear();
                 
@@ -95,8 +92,6 @@ namespace monitor::os::linux {
 
                 const auto now = Clock::now().time_since_epoch();
                 out.timestamp_ns = this->toNanoseconds(now);
-
-                return true;
             }
 
             void print(std::ostream& os) const override {

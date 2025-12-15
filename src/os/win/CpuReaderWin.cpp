@@ -15,6 +15,8 @@
 #include "monitor/types/Cpu.hpp"
 #include "monitor/ansi.hpp"
 
+#include "monitor/exceptions/SampleExceptions.hpp"
+
 // The recommended win32 api only exposes total cpu usage, not per core.
 // Therefore we use the lower level NT API from ntdll.dll
 
@@ -34,11 +36,11 @@ namespace monitor::os::win
     class CpuReader final : public monitor::os::AbstractCpuReader
     {
         public:
-            bool sample(CpuRawSample &out) override
+            void sample(CpuRawSample &out) override
             {
                 DWORD logical_cpus = GetActiveProcessorCount(ALL_PROCESSOR_GROUPS);
                 if (!logical_cpus)
-                    return false;
+                    throw monitor::exceptions::CpuSampleException("Failed to get logical CPU count");
 
                 std::vector<NtCorePerformanceInfo> ntProcessorInfo(logical_cpus);
 
@@ -57,7 +59,7 @@ namespace monitor::os::win
                 );
 
                 if (!NT_SUCCESS(status))
-                    return false;
+                    throw monitor::exceptions::CpuSampleException("Failed to query nt kernel for processor info");
 
                 readCores(out, logical_cpus, ntProcessorInfo);
 
@@ -65,8 +67,6 @@ namespace monitor::os::win
                 const auto now = Clock::now().time_since_epoch();
                 out.timestamp_ns = static_cast<uint64_t>(
                     std::chrono::duration_cast<Nanoseconds>(now).count());
-
-                return true;
             }
 
             void print(std::ostream& os) const override {

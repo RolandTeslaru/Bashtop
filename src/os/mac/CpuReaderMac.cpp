@@ -13,6 +13,8 @@
 
 #include "monitor/ansi.hpp"
 
+#include "monitor/exceptions/SampleExceptions.hpp"
+
 using CpuRawSample = monitor::types::cpu::RawSample;
 using CpuCoreTicks = monitor::types::cpu::CoreTicks;
 
@@ -22,7 +24,7 @@ using Nanoseconds  = std::chrono::nanoseconds;
 namespace monitor::os::mac{
     class CpuReader final : public monitor::os::AbstractCpuReader{
         public:
-            bool sample(CpuRawSample &out) override{
+            void sample(CpuRawSample &out) override{
 
                 natural_t cpuCount = 0;
                 processor_info_array_t info = nullptr; 
@@ -38,7 +40,7 @@ namespace monitor::os::mac{
                 );
 
                 if (kernel_call_return != KERN_SUCCESS || info == nullptr || cpuCount == 0)
-                    return false;
+                    throw monitor::exceptions::CpuSampleException("Failed on kernel call");
 
                 const auto now = Clock::now().time_since_epoch();
 
@@ -55,8 +57,6 @@ namespace monitor::os::mac{
                     reinterpret_cast<vm_address_t>(info),
                     infoCount * sizeof(integer_t)
                 );
-
-                return true;
             }
 
             void print(std::ostream& os) const override {

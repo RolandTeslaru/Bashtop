@@ -21,7 +21,7 @@ namespace monitor::os {
             }
 
             // Reads ticks from the os.
-            virtual bool sample(
+            virtual void sample(
                 monitor::types::cpu::RawSample& out
             ) = 0;      
 

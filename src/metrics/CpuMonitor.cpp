@@ -9,6 +9,7 @@
 #include "monitor/metrics/CpuMonitor.hpp"
 #include "monitor/types/Cpu.hpp"
 #include "monitor/ansi.hpp"
+#include "monitor/exceptions/SampleExceptions.hpp"
 
 using size_t = std::size_t;
 
@@ -149,8 +150,12 @@ namespace monitor::metrics {
     {
         CpuRawSample currentSample{};
 
-        if (!this->cpuReader->sample(currentSample))
+        try {
+            this->cpuReader->sample(currentSample);
+        }
+        catch (const monitor::exceptions::CpuSampleException& e) {
             return;
+        }
 
         if (this->hasSampledOnce == false)
         {

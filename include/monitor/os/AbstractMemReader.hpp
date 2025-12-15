@@ -20,7 +20,7 @@ namespace monitor::os {
             }
 
             
-            virtual bool sample(
+            virtual void sample(
                 monitor::types::mem::RawSample& out
             ) = 0;      
 

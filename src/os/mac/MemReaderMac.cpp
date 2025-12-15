@@ -15,11 +15,12 @@
 
 #include "monitor/os/AbstractMemReader.hpp"
 #include "monitor/ansi.hpp"
+#include "monitor/exceptions/SampleExceptions.hpp"
 
 namespace monitor::os::mac {
     class MemReader final : public monitor::os::AbstractMemReader {
         public:
-            bool sample(monitor::types::mem::RawSample& out) override {
+            void sample(monitor::types::mem::RawSample& out) override {
                 // Get total memory
                 int mib[2];
                 mib[0] = CTL_HW;
@@ -32,9 +33,8 @@ namespace monitor::os::mac {
                 // Get VM stats
                 mach_msg_type_number_t count = HOST_VM_INFO64_COUNT;
                 vm_statistics64_data_t vm_stats;
-                if (host_statistics64(mach_host_self(), HOST_VM_INFO64, (host_info64_t)&vm_stats, &count) != KERN_SUCCESS) {
-                    return false;
-                }
+                if (host_statistics64(mach_host_self(), HOST_VM_INFO64, (host_info64_t)&vm_stats, &count) != KERN_SUCCESS) 
+                    throw monitor::exceptions::MemSampleException("Failed to get VM stats from host");
 
                 vm_size_t page_size;
                 host_page_size(mach_host_self(), &page_size);
@@ -58,8 +58,6 @@ namespace monitor::os::mac {
                     out.swapUsed = 0;
                     out.swapFree = 0;
                 }
-
-                return true;
             }
 
             void print(std::ostream& os) const override {

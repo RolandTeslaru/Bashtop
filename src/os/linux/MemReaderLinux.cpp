@@ -10,15 +10,15 @@
 
 #include "monitor/os/AbstractMemReader.hpp"
 #include "monitor/ansi.hpp"
+#include "monitor/exceptions/SampleExceptions.hpp"
 
 namespace monitor::os::linux {
     class MemReader final : public monitor::os::AbstractMemReader {
         public:
-            bool sample(monitor::types::mem::RawSample& out) override {
+            void sample(monitor::types::mem::RawSample& out) override {
                 std::ifstream file("/proc/meminfo");
-                if (!file.is_open()) {
-                    return false;
-                }
+                if (!file.is_open())
+                    throw monitor::exceptions::MemSampleException("Failed to open memInfo");
 
                 std::string line;
                 std::string key;
@@ -49,8 +49,6 @@ namespace monitor::os::linux {
                 out.swapTotal = swapTotal * 1024;
                 out.swapFree = swapFree * 1024;
                 out.swapUsed = (swapTotal - swapFree) * 1024;
-
-                return true;
             }
 
             void print(std::ostream& os) const override {

@@ -12,6 +12,7 @@
 
 #include "monitor/os/AbstractMemReader.hpp"
 #include "monitor/ansi.hpp"
+#include "monitor/exceptions/SampleExceptions.hpp"
 
 namespace monitor::os::win {
     class MemReader final : public monitor::os::AbstractMemReader {
@@ -20,9 +21,9 @@ namespace monitor::os::win {
                 MEMORYSTATUSEX memInfo;
                 memInfo.dwLength = sizeof(MEMORYSTATUSEX);
                 
-                if (!GlobalMemoryStatusEx(&memInfo)) {
-                    return false;
-                }
+                if (!GlobalMemoryStatusEx(&memInfo))
+                    throw monitor::exceptions::MemSampleException("Failed to get memory status");
+
 
                 // Physical Memory
                 out.total = memInfo.ullTotalPhys;
@@ -56,8 +57,6 @@ namespace monitor::os::win {
                 } else {
                     out.swapFree = 0;
                 }
-
-                return true;
             }
 
             void print(std::ostream& os) const override {
