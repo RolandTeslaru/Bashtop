@@ -3,27 +3,22 @@
 namespace monitor::ui {
     class MenubarWidget : public ftxui::ComponentBase {
         public:
-            // ====================================================================
             // Constructor / Destructor
-            // ====================================================================
             MenubarWidget();
-            MenubarWidget(const MenubarWidget &widget);  // Copy constructor
+            MenubarWidget(const MenubarWidget &widget);
 
-            // ====================================================================
             // Operator Overloads
-            // ====================================================================
             MenubarWidget &operator=(const MenubarWidget &widget);
             friend std::ostream& operator<<(std::ostream& os, const MenubarWidget& widget);
 
-            // ====================================================================
-            // Public Interface
-            // ====================================================================
+            // Public interface
             ftxui::Element OnRender() override;
             bool OnEvent(ftxui::Event event) override;
 
-            void registerMenuGroup(
-                const std::string &label
-            );
+            // Render submenu overlay (goes above other widgets).
+            ftxui::Element RenderOverlay() const;
+
+            void registerMenuGroup(const std::string &label);
 
             void registerMenuItem(
                 const std::string &groupLabel,
@@ -33,9 +28,6 @@ namespace monitor::ui {
             );
 
         private:
-            // ====================================================================
-            // Member Variables
-            // ====================================================================
             struct MenuItem {
                 std::string label;
                 ftxui::Component component;
@@ -47,9 +39,17 @@ namespace monitor::ui {
                 std::vector<MenuItem> items;
             };
 
+            // list of menu groups.
             std::vector<MenuGroup> menuGroups;
-            int selectedGroup_ = 0;
-            int selectedItem_  = 0;
-            bool menuOpen_     = false;
+
+            // cached elements for rendering. 
+            // TODO: add more elements and stuff
+            ftxui::Element menubar;
+            ftxui::Element menuGroupsBar;
+
+            // State.
+            int  selectedGroup = 0;
+            int  selectedItem  = 0;
+            bool menuOpen      = false;
     };
 }

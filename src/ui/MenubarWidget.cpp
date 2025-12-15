@@ -14,9 +14,9 @@ namespace monitor::ui
         : ComponentBase()
     {
         this->menuGroups     = widget.menuGroups;
-        this->selectedGroup_ = widget.selectedGroup_;
-        this->selectedItem_  = widget.selectedItem_;
-        this->menuOpen_      = widget.menuOpen_;
+        this->selectedGroup  = widget.selectedGroup;
+        this->selectedItem   = widget.selectedItem;
+        this->menuOpen       = widget.menuOpen;
     }
 
     MenubarWidget &MenubarWidget::operator=(const MenubarWidget &widget)
@@ -26,10 +26,10 @@ namespace monitor::ui
 
         this->menuGroups     = widget.menuGroups;
         this->menubar        = widget.menubar;
-        this->menubarGroups  = widget.menubarGroups;
-        this->selectedGroup_ = widget.selectedGroup_;
-        this->selectedItem_  = widget.selectedItem_;
-        this->menuOpen_      = widget.menuOpen_;
+        this->menuGroupsBar  = widget.menuGroupsBar;
+        this->selectedGroup  = widget.selectedGroup;
+        this->selectedItem   = widget.selectedItem;
+        this->menuOpen       = widget.menuOpen;
         
         return *this;
     }
@@ -77,42 +77,43 @@ namespace monitor::ui
         using namespace ftxui;
 
         Elements items;
-        for (int i = 0; i < (int)menuGroups.size(); ++i) {
-            const auto &group = menuGroups[i];
-            Element label = text(" " + group.label + " ");
-            if (i == selectedGroup_)
-                label = label | inverted;
-            items.push_back(label);
-        }
-        menubarGroups = hbox(std::move(items));
 
-        menubar = hbox({
+        items.reserve(menuGroups.size());
+
+        for (int i = 0; i < (int)menuGroups.size(); ++i) {
+            Element label = text(" " + menuGroups[i].label + " ");
+            if (i == selectedGroup) label = label | inverted;
+            items.push_back(std::move(label));
+        }
+        auto groups_bar = hbox(std::move(items));
+
+        return hbox({
             text(" Bashtop ") | bold,
             separator(),
-            menubarGroups | flex,
+            groups_bar | flex,
         });
-
-        return menubar;
     }
 
     ftxui::Element MenubarWidget::RenderOverlay() const {
         using namespace ftxui;
 
-        if (!menuOpen_ || menuGroups.empty())
+        // return blank if menu is not open
+        if (!menuOpen || menuGroups.empty())
             return vbox({});
 
-        if (selectedGroup_ < 0 || selectedGroup_ >= (int)menuGroups.size())
+        if (selectedGroup < 0 || selectedGroup >= (int)menuGroups.size())
             return vbox({});
 
-        const auto &group = menuGroups[selectedGroup_];
+        const auto &group = menuGroups[selectedGroup];
 
         if (group.items.empty())
             return vbox({});
 
+        // build group title and items
         Elements item_elements;
         for (int i = 0; i < (int)group.items.size(); ++i) {
             Element line = text(" " + group.items[i].label + " ");
-            if (i == selectedItem_)
+            if (i == selectedItem)
                 line = line | inverted;
             item_elements.push_back(line);
         }
@@ -141,13 +142,13 @@ namespace monitor::ui
         if (menuGroups.empty())
             return false;
 
-        if (menuOpen_) {
-            const auto &group = menuGroups[selectedGroup_];
+        if (menuOpen) {
+            const auto &group = menuGroups[selectedGroup];
 
             if (event == Event::ArrowUp) {
                 if (!group.items.empty()) {
-                    selectedItem_ =
-                        (selectedItem_ - 1 + (int)group.items.size()) %
+                    selectedItem =
+                        (selectedItem - 1 + (int)group.items.size()) %
                         (int)group.items.size();
                 }
                 return true;
@@ -155,23 +156,23 @@ namespace monitor::ui
 
             if (event == Event::ArrowDown) {
                 if (!group.items.empty()) {
-                    selectedItem_ =
-                        (selectedItem_ + 1) % (int)group.items.size();
+                    selectedItem =
+                        (selectedItem + 1) % (int)group.items.size();
                 }
                 return true;
             }
 
             if (event == Event::Escape) {
-                menuOpen_ = false;
+                menuOpen = false;
                 return true;
             }
 
             if (event == Event::Return) {
-                menuOpen_ = false;
+                menuOpen = false;
                 if (!group.items.empty() &&
-                    selectedItem_ >= 0 &&
-                    selectedItem_ < (int)group.items.size()) {
-                    const auto &item = group.items[selectedItem_];
+                    selectedItem >= 0 &&
+                    selectedItem < (int)group.items.size()) {
+                    const auto &item = group.items[selectedItem];
                     if (item.callback)
                         item.callback();
                 }
@@ -182,22 +183,22 @@ namespace monitor::ui
         }
 
         if (event == Event::ArrowLeft) {
-            selectedGroup_ =
-                (selectedGroup_ - 1 + (int)menuGroups.size()) %
+            selectedGroup =
+                (selectedGroup - 1 + (int)menuGroups.size()) %
                 (int)menuGroups.size();
             return true;
         }
 
         if (event == Event::ArrowRight) {
-            selectedGroup_ =
-                (selectedGroup_ + 1) % (int)menuGroups.size();
+            selectedGroup =
+                (selectedGroup + 1) % (int)menuGroups.size();
             return true;
         }
 
         if (event == Event::Return) {
-            if (!menuGroups[selectedGroup_].items.empty()) {
-                menuOpen_     = true;
-                selectedItem_ = 0;
+            if (!menuGroups[selectedGroup].items.empty()) {
+                menuOpen     = true;
+                selectedItem = 0;
                 return true;
             }
         }

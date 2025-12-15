@@ -22,14 +22,10 @@
 
 #include "monitor/ansi.hpp"
 
-using namespace ftxui;
 
 using CpuMonitor    = monitor::metrics::CpuMonitor;
 using vector_double = std::vector<double>;
 using vector_int    = std::vector<int>;
-
-
-using namespace ftxui;
 
 void runTests(){
     std::cout << std::endl << monitor::ansi::BOLD << monitor::ansi::YELLOW <<"Running tests..." << monitor::ansi::RESET << std::endl << std::endl;
@@ -48,8 +44,8 @@ void runTests(){
 
     auto screen = ScreenInteractive::Fullscreen();
 
-
     auto cpuWidget = Make<monitor::ui::CpuWidget>(*cpuMonitorPtr);
+
     Component root = Renderer(cpuWidget, [cpuWidget] {
         return hbox({
             cpuWidget->Render() | ftxui::flex,
@@ -58,6 +54,8 @@ void runTests(){
 
     std::cout << *cpuWidget << std::endl; // widget is a shared ptr so deref
 }
+
+
 
 int main()
 {
@@ -81,39 +79,35 @@ int main()
     auto cpuWidget = Make<monitor::ui::CpuWidget>(*cpuMonitorPtr);
     auto memWidget = Make<monitor::ui::MemWidget>(*memMonitorPtr);
 
-    Component content = Renderer(cpuWidget, [cpuWidget, memWidget] {
+    Component WidgetsContentArea = Renderer(cpuWidget, [cpuWidget, memWidget] {
         return hbox({
             memWidget->Render() | ftxui::flex,
             cpuWidget->Render() | ftxui::flex,
         }) | ftxui::flex;
     });
 
-    auto menubarWidget = Make<monitor::ui::MenubarWidget>();
-    menubarWidget->registerMenuGroup("File");
-    menubarWidget->registerMenuGroup("Help");
-    menubarWidget->registerMenuGroup("Edit");
-    menubarWidget->registerMenuGroup("View");
+    auto Menubar = Make<monitor::ui::MenubarWidget>();
+    Menubar->registerMenuGroup("File");
+    Menubar->registerMenuGroup("Help");
+    Menubar->registerMenuGroup("Edit");
+    Menubar->registerMenuGroup("View");
 
     bool show_dialog  = false;
     std::string dialog_title;
     std::string dialog_body;
 
-    using namespace ftxui;
-
-    menubarWidget->registerMenuItem(
+    Menubar->registerMenuItem(
         "File",
         "About Bashtop",
         Component{}, // no compoennt currnetl
         [&] {
             show_dialog  = true;
             dialog_title = "About Bashtop";
-            dialog_body  = "Bashtop system monitor\n"
-                           "Powered by FTXUI.\n\n"
-                           "Use OK to close.";
+            dialog_body  = "Bashtop is a terminal system monitor tool that tracks cpu and memory usage.\n";
         }
     );
 
-    menubarWidget->registerMenuItem(
+    Menubar->registerMenuItem(
         "File",
         "Quit",
         Component{},
@@ -124,7 +118,8 @@ int main()
 
     auto DialogButton = Button("OK", [&] { show_dialog = false; });
 
-    Component Dialog = Renderer(DialogButton, [&] {
+
+    Component StandardDialog = Renderer(DialogButton, [&] {
         return window(
             text(dialog_title),
             vbox({
@@ -135,14 +130,23 @@ int main()
         ) | clear_under | center | size(WIDTH, LESS_THAN, 50);
     });
 
+    StandardDialog = CatchEvent(StandardDialog, [](Event e) {
+        // consume arrow keys, rest goes to button
+        if (e == Event::ArrowLeft || e == Event::ArrowRight ||
+            e == Event::ArrowUp   || e == Event::ArrowDown) {
+            return true;
+        }
+        return false; // propogate rest of events (Enter for button) to contents
+    });
+
     Component layout = Container::Vertical({
-        menubarWidget,
-        content,
+        Menubar,
+        WidgetsContentArea,
     });
 
     Component Layout = Renderer(layout, [&] {
-        Element MenubarWidget = menubarWidget->Render();
-        Element body          = content->Render() | flex;
+        Element MenubarWidget = Menubar->Render();
+        Element body          = WidgetsContentArea->Render() | flex;
 
         Element document = vbox({
             MenubarWidget,
@@ -152,14 +156,17 @@ int main()
 
         return dbox({
             document,
-            menubarWidget->RenderOverlay(),
+            Menubar->RenderOverlay(),
         });
     });
 
-    Component root = Modal(Layout, Dialog, &show_dialog);
+    Component root = Modal(Layout, StandardDialog, &show_dialog);
 
-    root |= CatchEvent([&, menubarWidget](Event event) {
-        return menubarWidget->OnEvent(event);
+    root |= CatchEvent([Menubar, &show_dialog](Event event) {
+        // catch events only if dialog is not shown
+        if (show_dialog)
+            return false;
+        return Menubar->OnEvent(event);
     });
 
     screen.Loop(root);

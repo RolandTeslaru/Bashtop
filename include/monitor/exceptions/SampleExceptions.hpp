@@ -26,6 +26,6 @@ namespace monitor::exceptions {
     public:
         explicit ValueException(const std::string &message)
             : std::runtime_error("ValueException: " + message) {}
-    }
+    };
 
 }
