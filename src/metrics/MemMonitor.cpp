@@ -7,6 +7,8 @@
 #include "monitor/metrics/MemMonitor.hpp"
 #include "monitor/types/Mem.hpp"
 #include "monitor/ansi.hpp"
+#include "monitor/exceptions/SampleExceptions.hpp"
+
 
 using RawSample = monitor::types::mem::RawSample;
 
@@ -39,8 +41,13 @@ namespace monitor::metrics {
     void MemMonitor::computeSnapshot() {
         RawSample currentSample{};
 
-        if (!this->memReader->sample(currentSample))
-            return;
+        try {
+            this->memReader->sample(currentSample);
+        } catch (const monitor::exceptions::MemSampleException& e) {
+            throw; 
+        }
+
+        this->memReader->sample(currentSample);
 
         if (this->hasSampledOnce == false) {
             prevSample = currentSample;
