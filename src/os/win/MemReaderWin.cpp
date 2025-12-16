@@ -14,59 +14,60 @@
 #include "monitor/ansi.hpp"
 #include "monitor/exceptions/SampleExceptions.hpp"
 
+#include "monitor/os/win/MemReaderWin.hpp"
+
 namespace monitor::os::win {
-    class MemReader final : public monitor::os::AbstractMemReader {
-        public:
-            bool sample(monitor::types::mem::RawSample& out) override {
-                MEMORYSTATUSEX memInfo;
-                memInfo.dwLength = sizeof(MEMORYSTATUSEX);
-                
-                if (!GlobalMemoryStatusEx(&memInfo))
-                    throw monitor::exceptions::MemSampleException("Failed to get memory status");
 
+void MemReader::sample(monitor::types::mem::RawSample& out) {
+    MEMORYSTATUSEX memInfo;
+    memInfo.dwLength = sizeof(MEMORYSTATUSEX);
 
-                // Physical Memory
-                out.total = memInfo.ullTotalPhys;
-                out.free = memInfo.ullAvailPhys;
-                out.used = memInfo.ullTotalPhys - memInfo.ullAvailPhys;
+    if (!GlobalMemoryStatusEx(&memInfo))
+        throw monitor::exceptions::MemSampleException("Failed to get memory status");
 
-                // swap (pageFile) approximation
-                // ullTotalPageFile = Commit Limit (Physical + PageFile)
-                // ullAvailPageFile = Available Commit
-                
-                uint64_t commitLimit = memInfo.ullTotalPageFile;
-                uint64_t commitAvail = memInfo.ullAvailPageFile;
-                uint64_t commitUsed = commitLimit - commitAvail;
+    // Physical Memory
+    out.total = memInfo.ullTotalPhys;
+    out.free = memInfo.ullAvailPhys;
+    out.used = memInfo.ullTotalPhys - memInfo.ullAvailPhys;
 
-                // Approximate PageFile size on disk
-                if (commitLimit > out.total) {
-                    out.swapTotal = commitLimit - out.total;
-                } else {
-                    out.swapTotal = 0;
-                }
+    // swap (pageFile) approximation
+    // ullTotalPageFile = Commit Limit (Physical + PageFile)
+    // ullAvailPageFile = Available Commit
 
-                // Used Swap = Used Commit - Used RAM
-                if (commitUsed > out.used) {
-                    out.swapUsed = commitUsed - out.used;
-                } else {
-                    out.swapUsed = 0;
-                }
+    uint64_t commitLimit = memInfo.ullTotalPageFile;
+    uint64_t commitAvail = memInfo.ullAvailPageFile;
+    uint64_t commitUsed = commitLimit - commitAvail;
 
-                if (out.swapTotal > out.swapUsed) {
-                    out.swapFree = out.swapTotal - out.swapUsed;
-                } else {
-                    out.swapFree = 0;
-                }
-            }
+    // Approximate PageFile size on disk
+    if (commitLimit > out.total) {
+        out.swapTotal = commitLimit - out.total;
+    } else {
+        out.swapTotal = 0;
+    }
 
-            void print(std::ostream& os) const override {
-                os << monitor::ansi::BOLD << monitor::ansi::BLUE << "MemReaderWin" << monitor::ansi::RESET << std::endl;
-            }
-    };
+    // Used Swap = Used Commit - Used RAM
+    if (commitUsed > out.used) {
+        out.swapUsed = commitUsed - out.used;
+    } else {
+        out.swapUsed = 0;
+    }
+
+    if (out.swapTotal > out.swapUsed) {
+        out.swapFree = out.swapTotal - out.swapUsed;
+    } else {
+        out.swapFree = 0;
+    }
+}
+
+void MemReader::print(std::ostream& os) const {
+    os << monitor::ansi::BOLD << monitor::ansi::BLUE << "MemReaderWin" << monitor::ansi::RESET << std::endl;
+}
+
 }
 
 
 namespace monitor::os {
+    // Engine monitors usually take ownership of the readers
     std::unique_ptr<AbstractMemReader> make_mem_reader(){
         return std::make_unique<win::MemReader>();
     }

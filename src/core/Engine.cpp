@@ -24,8 +24,10 @@ namespace monitor {
         std::unique_ptr<os::AbstractCpuReader> cpuReader,
         std::unique_ptr<os::AbstractMemReader> memReader
     )
-    :   cpuMonitor(std::make_shared<metrics::CpuMonitor>(std::move(cpuReader))),
-        memMonitor(std::make_shared<metrics::MemMonitor>(std::move(memReader)))
+    // engine monitors take owneship of readers, 
+    // monitors are shared so they can alaso be used by the widgets
+    :   cpuMonitor(std::make_shared<metrics::CpuMonitor>(std::move(cpuReader))), 
+        memMonitor(std::make_shared<metrics::MemMonitor>(std::move(memReader))) 
     {}
 
     Engine::~Engine() {
@@ -79,7 +81,7 @@ namespace monitor {
     // Public Interface
     // ============================================================================
     std::shared_ptr<monitor::metrics::CpuMonitor> Engine::getCpuMonitor() {
-        return this->cpuMonitor;
+        return this->cpuMonitor; 
     }
 
     [[maybe_unused]] std::shared_ptr<monitor::metrics::MemMonitor> Engine::getMemMonitor() {

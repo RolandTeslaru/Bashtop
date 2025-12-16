@@ -15,94 +15,89 @@
 
 #include "monitor/exceptions/SampleExceptions.hpp"
 
+#include "monitor/os/mac/CpuReaderMac.hpp"
+
 using CpuRawSample = monitor::types::cpu::RawSample;
 using CpuCoreTicks = monitor::types::cpu::CoreTicks;
 
 using Clock        = std::chrono::steady_clock;
 using Nanoseconds  = std::chrono::nanoseconds;
 
-namespace monitor::os::mac{
-    class CpuReader final : public monitor::os::AbstractCpuReader{
-        public:
-            AbstractCpuReader* clone() const override {
-                return new CpuReader(*this);
-            }
+namespace monitor::os::mac {
 
-            void sample(CpuRawSample &out) override{
+AbstractCpuReader* CpuReader::clone() const {
+    return new CpuReader(*this);
+}
 
-                natural_t cpuCount = 0;
-                processor_info_array_t info = nullptr; 
-                
-                mach_msg_type_number_t infoCount = 0;
+void CpuReader::sample(CpuRawSample& out) {
+    natural_t cpuCount = 0;
+    processor_info_array_t info = nullptr;
 
-                const kern_return_t kernel_call_return = host_processor_info(
-                    mach_host_self(),
-                    PROCESSOR_CPU_LOAD_INFO,
-                    &cpuCount,
-                    &info,
-                    &infoCount
-                );
+    mach_msg_type_number_t infoCount = 0;
 
-                if (kernel_call_return != KERN_SUCCESS || info == nullptr || cpuCount == 0)
-                    throw monitor::exceptions::CpuSampleException("Failed on kernel call");
+    const kern_return_t kernel_call_return = host_processor_info(
+        mach_host_self(),
+        PROCESSOR_CPU_LOAD_INFO,
+        &cpuCount,
+        &info,
+        &infoCount);
 
-                const auto now = Clock::now().time_since_epoch();
+    if (kernel_call_return != KERN_SUCCESS || info == nullptr || cpuCount == 0)
+        throw monitor::exceptions::CpuSampleException("Failed on kernel call");
 
-                out.timestamp_ns = this->toNanoseconds(now);
+    const auto now = Clock::now().time_since_epoch();
+    out.timestamp_ns = this->toNanoseconds(now);
 
-                out.per_core.clear();
-                out.per_core.resize(cpuCount);
+    out.per_core.clear();
+    out.per_core.resize(cpuCount);
 
-                this->readKernelLoads(info, cpuCount, out);
+    CpuReader::readKernelLoads(info, cpuCount, out);
 
-                // Release temporary kernel allocated memory
-                vm_deallocate(
-                    mach_task_self(),
-                    reinterpret_cast<vm_address_t>(info),
-                    infoCount * sizeof(integer_t)
-                );
-            }
+    // Release temporary kernel allocated memory
+    vm_deallocate(
+        mach_task_self(),
+        reinterpret_cast<vm_address_t>(info),
+        infoCount * sizeof(integer_t));
+}
 
-            void print(std::ostream& os) const override {
-                os << monitor::ansi::BOLD << monitor::ansi::BLUE << "CpuReaderMac" << monitor::ansi::RESET << std::endl;
-            }
+void CpuReader::print(std::ostream& os) const {
+    os << monitor::ansi::BOLD << monitor::ansi::BLUE << "CpuReaderMac" << monitor::ansi::RESET << std::endl;
+}
 
-    private:
-        static void readKernelLoads(
-            processor_info_array_t info,
-            natural_t cpuCount,
-            CpuRawSample &out)
-        {
-            uint64_t totalIdle = 0;
-            uint64_t totalAll = 0;
+void CpuReader::readKernelLoads(
+    processor_info_array_t info,
+    natural_t cpuCount,
+    CpuRawSample& out) {
+    uint64_t totalIdle = 0;
+    uint64_t totalAll = 0;
 
-            auto loads = reinterpret_cast<processor_cpu_load_info_t>(info);
+    auto loads = reinterpret_cast<processor_cpu_load_info_t>(info);
 
-            for (natural_t coreIdx = 0; coreIdx < cpuCount; ++coreIdx)
-            {
-                const uint64_t user = loads[coreIdx].cpu_ticks[CPU_STATE_USER];
-                const uint64_t sys  = loads[coreIdx].cpu_ticks[CPU_STATE_SYSTEM];
-                const uint64_t idle = loads[coreIdx].cpu_ticks[CPU_STATE_IDLE];
-                const uint64_t nice = loads[coreIdx].cpu_ticks[CPU_STATE_NICE];
+    for (natural_t coreIdx = 0; coreIdx < cpuCount; ++coreIdx) {
+        const uint64_t user = loads[coreIdx].cpu_ticks[CPU_STATE_USER];
+        const uint64_t sys = loads[coreIdx].cpu_ticks[CPU_STATE_SYSTEM];
+        const uint64_t idle = loads[coreIdx].cpu_ticks[CPU_STATE_IDLE];
+        const uint64_t nice = loads[coreIdx].cpu_ticks[CPU_STATE_NICE];
 
-                const uint64_t all_ticks = user + sys + idle + nice;
+        const uint64_t all_ticks = user + sys + idle + nice;
 
-                out.per_core[coreIdx].idle = idle;
-                out.per_core[coreIdx].total = all_ticks;
+        out.per_core[coreIdx].idle = idle;
+        out.per_core[coreIdx].total = all_ticks;
 
-                totalIdle += idle;
-                totalAll += all_ticks;
-            }
+        totalIdle += idle;
+        totalAll += all_ticks;
+    }
 
-            out.total.idle = totalIdle;
-            out.total.total = totalAll;
-        }
-    };
-};
+    out.total.idle = totalIdle;
+    out.total.total = totalAll;
+}
+
+}
 
 
 
 namespace monitor::os {
+    // Engine monitors usually take ownership of the readers
     std::unique_ptr<AbstractCpuReader> make_cpu_reader(){
         return std::make_unique<mac::CpuReader>();
     }

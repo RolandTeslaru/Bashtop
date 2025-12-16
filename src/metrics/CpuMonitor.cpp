@@ -72,7 +72,8 @@ namespace monitor::metrics {
     // Constructor / Destructor
     // ============================================================================
     CpuMonitor::CpuMonitor(std::unique_ptr<AbstractCpuReader> reader)
-        : cpuReader(std::move(reader)) {
+        : cpuReader(std::move(reader)) 
+    {
         // Run an intial snapshot to get the cores;
         CpuRawSample sample;
         cpuReader->sample(sample);
