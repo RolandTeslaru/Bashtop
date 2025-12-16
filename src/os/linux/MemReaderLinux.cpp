@@ -1,3 +1,5 @@
+#ifdef __linux__
+
 #include <vector>
 #include <cstdint>
 #include <chrono>
@@ -65,3 +67,5 @@ namespace monitor::os {
         return std::make_unique<linux::MemReader>();
     }
 }
+
+#endif

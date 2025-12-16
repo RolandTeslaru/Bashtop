@@ -1,3 +1,5 @@
+#ifdef __APPLE__
+
 #include <array>
 #include <string>
 #include <cstdint>
@@ -98,3 +100,6 @@ namespace monitor::os {
         return std::make_unique<mac::PlatformInfoMac>();
     }
 }
+
+
+#endif

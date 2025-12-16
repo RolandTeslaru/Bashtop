@@ -1,3 +1,5 @@
+#ifdef __linux__
+
 #include <array>
 #include <string>
 #include <cstdint>
@@ -63,3 +65,5 @@ namespace monitor::os {
         return std::make_unique<linux::PlatformInfoLinux>();
     }
 }
+
+#endif 

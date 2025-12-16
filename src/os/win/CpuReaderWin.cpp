@@ -1,8 +1,5 @@
-#ifndef _WIN32
-
-#error "CpuReaderWin.cpp should only be compiled on Windows."
-
-#endif
+// Compile this implementation only on Windows
+#ifdef _WIN32
 
 #include <windows.h>
 #include <winternl.h>
@@ -139,3 +136,5 @@ namespace monitor::os
         return std::make_unique<win::CpuReader>();
     }
 }
+
+#endif

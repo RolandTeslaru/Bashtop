@@ -1,3 +1,4 @@
+#ifdef _WIN32
 #include <vector>
 #include <cstdint>
 #include <chrono>
@@ -72,3 +73,4 @@ namespace monitor::os {
         return std::make_unique<win::MemReader>();
     }
 }
+#endif

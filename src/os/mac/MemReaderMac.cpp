@@ -1,3 +1,5 @@
+#ifdef __APPLE__
+
 #include <vector>
 #include <cstdint>
 #include <chrono>
@@ -73,3 +75,5 @@ namespace monitor::os {
         return std::make_unique<mac::MemReader>();
     }
 }
+
+#endif

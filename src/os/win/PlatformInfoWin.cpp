@@ -1,3 +1,5 @@
+#ifdef _WIN32
+
 #include <array>
 #include <string>
 #include <cstdint>
@@ -20,3 +22,5 @@ namespace monitor::os {
         return std::make_unique<win::PlatformInfoWin>();
     }
 }
+
+#endif
