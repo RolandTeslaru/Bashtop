@@ -37,7 +37,7 @@ namespace monitor::os {
                 monitor::types::cpu::RawSample& out
             ) = 0;      
 
-            // Cppcheck is dumb
+            // cppcheck-suppress unusedFunction
             [[maybe_unused]] static uint64_t toNanoseconds(const auto &duration){
                 return static_cast<uint64_t>(
                     std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count()

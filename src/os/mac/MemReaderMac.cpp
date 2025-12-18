@@ -33,7 +33,7 @@ namespace monitor::os::mac
 
     void MemReader::sample(MemRawSample &out)
     {
-
+        int sys_call_return;
 
         // fun fact: macOS organises system info in a tree like structure,
 
@@ -45,7 +45,7 @@ namespace monitor::os::mac
         size_t length = sizeof(int64_t);
         
         // sysctl call with the mib path to get physical memory size
-        const int sys_call_return = sysctl(mib, 2, &physical_memory, &length, NULL, 0); 
+        sys_call_return = sysctl(mib, 2, &physical_memory, &length, NULL, 0); 
 
         if (sys_call_return != 0)
             throw MemSampleException("Mach sys call failed. Could not get physical memory size via sysctl.");
@@ -88,7 +88,7 @@ namespace monitor::os::mac
         struct xsw_usage vmusage{};
         size_t size = sizeof(vmusage);
                                                 // shortcut to get swap usage ( /vm/swapusage )
-        const int sys_call_return = sysctlbyname("vm.swapusage", &vmusage, &size, NULL, 0);
+        sys_call_return = sysctlbyname("vm.swapusage", &vmusage, &size, NULL, 0);
 
         if (sys_call_return == 0)
         {

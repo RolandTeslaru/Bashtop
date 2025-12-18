@@ -11,7 +11,7 @@
 #include "monitor/ansi.hpp"
 #include "monitor/exceptions/SampleExceptions.hpp"
 
-#include "iostream"
+#include <iostream>
 
 using size_t = std::size_t;
 
@@ -184,9 +184,7 @@ namespace monitor::metrics {
         catch (const CpuSampleException& e) {
             // mark snapshot invalid and keep previous values
             this->snapshot_valid = false;
-            // optional: zero window to reflect no interval
             this->latestSnapshot.window_ns = 0;
-            // minimal diagnostics to aid debugging
             std::cerr << "[CpuMonitor] Sampling failed: " << e.what() << std::endl;
             return;
         }
