@@ -85,7 +85,8 @@ namespace monitor::metrics {
         try {
             cpuReader->sample(sample);
         } catch (const CpuSampleException& e) {
-            throw; 
+            std::cerr << "CPU sampling error during CpuMonitor construction: " << e.what() << std::endl;
+            throw;
         }
 
         num_cores = sample.per_core.size(); // get number of cores from an initial dummy sample
