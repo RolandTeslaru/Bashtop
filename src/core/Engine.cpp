@@ -7,27 +7,34 @@
 #include "monitor/core/Engine.hpp"
 #include <ftxui/component/screen_interactive.hpp>
 #include <ostream>
+#include <iostream>
 
 #include "monitor/ansi.hpp"
+#include "monitor/exceptions/Engine.hpp"
 
 namespace monitor {
+
+    using CpuMonitor        = monitor::metrics::CpuMonitor;
+    using MemMonitor        = monitor::metrics::MemMonitor;
+    using AbstractCpuReader = monitor::os::AbstractCpuReader;
+    using AbstractMemReader = monitor::os::AbstractMemReader;
 
     // ============================================================================
     // Constructor / Destructor
     // ============================================================================
     Engine::Engine()
-    :   cpuMonitor(std::make_shared<metrics::CpuMonitor>(os::make_cpu_reader())),
-        memMonitor(std::make_shared<metrics::MemMonitor>(os::make_mem_reader()))
+    :   cpuMonitor(std::make_shared<CpuMonitor>(os::make_cpu_reader())),
+        memMonitor(std::make_shared<MemMonitor>(os::make_mem_reader()))
     {}
 
     Engine::Engine(
-        std::unique_ptr<os::AbstractCpuReader> cpuReader,
-        std::unique_ptr<os::AbstractMemReader> memReader
+        std::unique_ptr<AbstractCpuReader> cpuReader,
+        std::unique_ptr<AbstractMemReader> memReader
     )
     // engine monitors take owneship of readers, 
     // monitors are shared so they can alaso be used by the widgets
-    :   cpuMonitor(std::make_shared<metrics::CpuMonitor>(std::move(cpuReader))), 
-        memMonitor(std::make_shared<metrics::MemMonitor>(std::move(memReader))) 
+    :   cpuMonitor(std::make_shared<CpuMonitor>(std::move(cpuReader))), 
+        memMonitor(std::make_shared<MemMonitor>(std::move(memReader))) 
     {}
 
     Engine::~Engine() {
@@ -80,11 +87,11 @@ namespace monitor {
     // ============================================================================
     // Public Interface
     // ============================================================================
-    std::shared_ptr<monitor::metrics::CpuMonitor> Engine::getCpuMonitor() {
+    std::shared_ptr<CpuMonitor> Engine::getCpuMonitor() {
         return this->cpuMonitor; 
     }
 
-    [[maybe_unused]] std::shared_ptr<monitor::metrics::MemMonitor> Engine::getMemMonitor() {
+    [[maybe_unused]] std::shared_ptr<MemMonitor> Engine::getMemMonitor() {
         return this->memMonitor;
     }
 
@@ -99,7 +106,13 @@ namespace monitor {
 
         this->isThreadRunning = true;
 
-        this->engineThread = std::thread(&Engine::threadFunction, this, std::ref(screen));
+        try {
+            this->engineThread = std::thread(&Engine::threadFunction, this, std::ref(screen));
+        } catch (const exceptions::EngineThreadException& e) {
+            std::cerr << "Could not create engine thread: " << e.what() << std::endl;
+            this->isThreadRunning = false;
+            throw; 
+        }
     }
 
     void Engine::shutdown() {

@@ -19,50 +19,52 @@
 
 namespace monitor::os::win {
 
-void MemReader::sample(monitor::types::mem::RawSample& out) {
-    MEMORYSTATUSEX memInfo;
-    memInfo.dwLength = sizeof(MEMORYSTATUSEX);
+    using MemSampleException = monitor::exceptions::MemSampleException;
 
-    if (!GlobalMemoryStatusEx(&memInfo))
-        throw monitor::exceptions::MemSampleException("Failed to get memory status");
+    void MemReader::sample(monitor::types::mem::RawSample& out) {
+        MEMORYSTATUSEX memInfo;
+        memInfo.dwLength = sizeof(MEMORYSTATUSEX);
 
-    // Physical Memory
-    out.total = memInfo.ullTotalPhys;
-    out.free = memInfo.ullAvailPhys;
-    out.used = memInfo.ullTotalPhys - memInfo.ullAvailPhys;
+        if (!GlobalMemoryStatusEx(&memInfo))
+            throw MemSampleException("Failed to get NT memory status");
 
-    // swap (pageFile) approximation
-    // ullTotalPageFile = Commit Limit (Physical + PageFile)
-    // ullAvailPageFile = Available Commit
+        // Physical Memory
+        out.total = memInfo.ullTotalPhys;
+        out.free = memInfo.ullAvailPhys;
+        out.used = memInfo.ullTotalPhys - memInfo.ullAvailPhys;
 
-    uint64_t commitLimit = memInfo.ullTotalPageFile;
-    uint64_t commitAvail = memInfo.ullAvailPageFile;
-    uint64_t commitUsed = commitLimit - commitAvail;
+        // swap (pageFile) approx
+        // ullTotalPageFile = Commit Limit (Physical + PageFile)
+        // ullAvailPageFile = Available Commit
 
-    // Approximate PageFile size on disk
-    if (commitLimit > out.total) {
-        out.swapTotal = commitLimit - out.total;
-    } else {
-        out.swapTotal = 0;
+        uint64_t commitLimit = memInfo.ullTotalPageFile;
+        uint64_t commitAvail = memInfo.ullAvailPageFile;
+        uint64_t commitUsed = commitLimit - commitAvail;
+
+        // Approximate PageFile size on disk
+        if (commitLimit > out.total) {
+            out.swapTotal = commitLimit - out.total;
+        } else {
+            out.swapTotal = 0;
+        }
+
+        // Used Swap = Used Commit - Used RAM
+        if (commitUsed > out.used) {
+            out.swapUsed = commitUsed - out.used;
+        } else {
+            out.swapUsed = 0;
+        }
+
+        if (out.swapTotal > out.swapUsed) {
+            out.swapFree = out.swapTotal - out.swapUsed;
+        } else {
+            out.swapFree = 0;
+        }
     }
 
-    // Used Swap = Used Commit - Used RAM
-    if (commitUsed > out.used) {
-        out.swapUsed = commitUsed - out.used;
-    } else {
-        out.swapUsed = 0;
+    void MemReader::print(std::ostream& os) const {
+        os << monitor::ansi::BOLD << monitor::ansi::BLUE << "MemReaderWin" << monitor::ansi::RESET << std::endl;
     }
-
-    if (out.swapTotal > out.swapUsed) {
-        out.swapFree = out.swapTotal - out.swapUsed;
-    } else {
-        out.swapFree = 0;
-    }
-}
-
-void MemReader::print(std::ostream& os) const {
-    os << monitor::ansi::BOLD << monitor::ansi::BLUE << "MemReaderWin" << monitor::ansi::RESET << std::endl;
-}
 
 }
 

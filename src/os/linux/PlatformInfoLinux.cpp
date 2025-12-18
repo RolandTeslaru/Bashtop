@@ -17,44 +17,44 @@
 
 namespace monitor::os::linux {
 
-PlatformInfoLinux::PlatformInfoLinux() {
-    PlatformInfoLinux::readFromUnixObj(arch, kernel_release);
+    PlatformInfoLinux::PlatformInfoLinux() {
+        PlatformInfoLinux::readFromUnixObj(arch, kernel_release);
 
-    // CPU counts
-    long onln = sysconf(_SC_NPROCESSORS_ONLN);
-    if (onln > 0)
-        logical_cpus = static_cast<uint32_t>(onln);
-    physical_cpus = logical_cpus;
+        // CPU counts
+        long onln = sysconf(_SC_NPROCESSORS_ONLN);
+        if (onln > 0)
+            logical_cpus = static_cast<uint32_t>(onln);
+        physical_cpus = logical_cpus;
 
-    // Memory
-    long pages = sysconf(_SC_PHYS_PAGES);
-    long psz = sysconf(_SC_PAGESIZE);
-    if (pages > 0 && psz > 0)
-        mem_total_bytes = static_cast<uint64_t>(pages) * static_cast<uint64_t>(psz);
-    if (psz > 0)
-        page_size_bytes = static_cast<uint64_t>(psz);
+        // Memory
+        long pages = sysconf(_SC_PHYS_PAGES);
+        long psz = sysconf(_SC_PAGESIZE);
+        if (pages > 0 && psz > 0)
+            mem_total_bytes = static_cast<uint64_t>(pages) * static_cast<uint64_t>(psz);
+        if (psz > 0)
+            page_size_bytes = static_cast<uint64_t>(psz);
 
-    os_version = "Linux";
+        os_version = "Linux";
 
-    hostname = PlatformInfoLinux::readHostname();
+        hostname = PlatformInfoLinux::readHostname();
 
-    // TODO: read cpu_name, os_build, model_id and other
-}
-
-void PlatformInfoLinux::readFromUnixObj(std::string& archOut, std::string& kernelRelease) {
-    struct utsname unixObj{};
-    if (uname(&unixObj) == 0) {
-        archOut = unixObj.machine;
-        kernelRelease = unixObj.release;
+        // TODO: read cpu_name, os_build, model_id and other
     }
-}
 
-std::string PlatformInfoLinux::readHostname() {
-    std::array<char, 256> buffer{};
-    if (gethostname(buffer.data(), buffer.size()) == 0)
-        return std::string(buffer.data());
-    return {};
-}
+    void PlatformInfoLinux::readFromUnixObj(std::string& archOut, std::string& kernelRelease) {
+        struct utsname unixObj{};
+        if (uname(&unixObj) == 0) {
+            archOut = unixObj.machine;
+            kernelRelease = unixObj.release;
+        }
+    }
+
+    std::string PlatformInfoLinux::readHostname() {
+        std::array<char, 256> buffer{};
+        if (gethostname(buffer.data(), buffer.size()) == 0)
+            return std::string(buffer.data());
+        return {};
+    }
 
 }
 

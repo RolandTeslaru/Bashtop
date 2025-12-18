@@ -42,6 +42,7 @@ namespace monitor::metrics {
 
             CpuRawSample   prevSample;
             CpuSnapshot    latestSnapshot;
+            bool           snapshot_valid = false; // whether latestSnapshot reflects a successful sample
 
             bool   hasSampledOnce = false;
             size_t num_cores;  // number of cores

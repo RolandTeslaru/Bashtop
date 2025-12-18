@@ -3,6 +3,7 @@
 #include <chrono>
 #include <memory>
 #include <algorithm>
+#include <iostream>
 
 #include "monitor/metrics/MemMonitor.hpp"
 #include "monitor/types/Mem.hpp"
@@ -13,6 +14,7 @@
 using RawSample = monitor::types::mem::RawSample;
 
 namespace monitor::metrics {
+    using MemSampleException = monitor::exceptions::MemSampleException;
 
     // ============================================================================
     // Constructor / Destructor
@@ -43,7 +45,8 @@ namespace monitor::metrics {
 
         try {
             this->memReader->sample(currentSample);
-        } catch (const monitor::exceptions::MemSampleException& e) {
+        } catch (const MemSampleException& e) {
+            std::cerr << "Memory sampling error: " << e.what() << std::endl;
             throw; 
         }
 

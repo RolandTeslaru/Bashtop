@@ -11,6 +11,8 @@
 #include "monitor/ansi.hpp"
 #include "monitor/exceptions/SampleExceptions.hpp"
 
+#include "iostream"
+
 using size_t = std::size_t;
 
 using CoreTicks = monitor::types::cpu::CoreTicks;
@@ -21,6 +23,7 @@ using vector_double = std::vector<double>;
 
 namespace monitor::metrics {
 
+    using CpuSampleException = monitor::exceptions::CpuSampleException;
     // ============================================================================
     // Internal Static Helpers
     // ============================================================================
@@ -68,6 +71,8 @@ namespace monitor::metrics {
         }
     }
 
+
+
     // ============================================================================
     // Constructor / Destructor
     // ============================================================================
@@ -75,13 +80,22 @@ namespace monitor::metrics {
         : cpuReader(std::move(reader)) 
     {
         // Run an intial snapshot to get the cores;
-        CpuRawSample sample;
-        cpuReader->sample(sample);
+        CpuRawSample sample{};
+
+        try {
+            cpuReader->sample(sample);
+        } catch (const CpuSampleException& e) {
+            throw; 
+        }
 
         num_cores = sample.per_core.size(); // get number of cores from an initial dummy sample
     }
 
+
+
     CpuMonitor::~CpuMonitor() {}
+
+
 
     // ============================================================================
     // Operator Overloads
@@ -109,6 +123,8 @@ namespace monitor::metrics {
         return os;
     }
 
+
+
     // ============================================================================
     // Public Getters
     // ============================================================================
@@ -116,9 +132,13 @@ namespace monitor::metrics {
         return this->num_cores;
     }
 
+
+
     double CpuMonitor::getCpuTotalUsage() {
         return this->latestSnapshot.total_percentage;
     }
+
+
 
     double CpuMonitor::getCpuCoreUsage(const unsigned int coreIdx) {
         bool doesCoreExist = this->latestSnapshot.per_core_percentage.size() > coreIdx;
@@ -129,9 +149,13 @@ namespace monitor::metrics {
         return this->latestSnapshot.per_core_percentage[coreIdx];
     }
 
+
+
     const vector_double CpuMonitor::getCpuUsageHistory() {
         return this->cpu_usage_history;
     }
+
+
 
     [[maybe_unused]] const vector_double CpuMonitor::getCoreUsageHistory(
         const unsigned int coreIdx) {
@@ -144,6 +168,9 @@ namespace monitor::metrics {
         return this->core_usage_history[coreIdx];
     }
 
+
+
+    
     // ============================================================================
     // Core Logic
     // ============================================================================
@@ -154,7 +181,13 @@ namespace monitor::metrics {
         try {
             this->cpuReader->sample(currentSample);
         }
-        catch (const monitor::exceptions::CpuSampleException& e) {
+        catch (const CpuSampleException& e) {
+            // mark snapshot invalid and keep previous values
+            this->snapshot_valid = false;
+            // optional: zero window to reflect no interval
+            this->latestSnapshot.window_ns = 0;
+            // minimal diagnostics to aid debugging
+            std::cerr << "[CpuMonitor] Sampling failed: " << e.what() << std::endl;
             return;
         }
 
@@ -166,9 +199,13 @@ namespace monitor::metrics {
             latestSnapshot.window_ns = 0;
             latestSnapshot.total_percentage = 0.0;
             latestSnapshot.per_core_percentage.assign(
-                currentSample.per_core.size(), 0.0);
+                currentSample.per_core.size(), 0.0
+            );
 
             core_usage_history.assign(currentSample.per_core.size(), vector_double());
+
+            // initial dummy sample taken; we don't have a computed snapshot yet
+            this->snapshot_valid = false;
 
             return;
         }
@@ -207,6 +244,7 @@ namespace monitor::metrics {
         }
 
         this->prevSample = std::move(currentSample);
+        this->snapshot_valid = true;
     }
 
 };

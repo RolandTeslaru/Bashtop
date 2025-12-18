@@ -21,11 +21,18 @@
 #include "monitor/ui/MenubarWidget.hpp"
 
 #include "monitor/ansi.hpp"
+#include "monitor/exceptions/Platform.hpp"
 
 
 using CpuMonitor    = monitor::metrics::CpuMonitor;
 using vector_double = std::vector<double>;
 using vector_int    = std::vector<int>;
+
+using PlatformNotSupportedException = monitor::exceptions::PlatformNotSupportedException;
+
+using CpuiWidget    = monitor::ui::CpuWidget;
+using MemWidget     = monitor::ui::MemWidget;
+using MenubarWidget = monitor::ui::MenubarWidget;
 
 void runTests(){
     std::cout << std::endl << monitor::ansi::BOLD << monitor::ansi::YELLOW <<"Running tests..." << monitor::ansi::RESET << std::endl << std::endl;
@@ -44,7 +51,7 @@ void runTests(){
 
     auto screen = ScreenInteractive::Fullscreen();
 
-    auto cpuWidget = Make<monitor::ui::CpuWidget>(*cpuMonitorPtr);
+    auto cpuWidget = ftxui::Make<CpuiWidget>(*cpuMonitorPtr);
 
     Component root = Renderer(cpuWidget, [cpuWidget] {
         return hbox({
@@ -59,6 +66,11 @@ void runTests(){
 
 int main()
 {
+    #if !defined(__linux__) && !defined(__APPLE__) && !defined(_WIN32)
+        throw PlatformNotSupportedException(
+            "This os is not supported yet."
+        );
+    #endif
     char a;
     std::cout << "Enter 0 to run tests, or anything else to start the monitor:" << std::endl;
     std::cin >> a;
@@ -74,10 +86,15 @@ int main()
 
     auto screen = ScreenInteractive::Fullscreen();
     
-    engine.ignition(screen);
+    try {
+        engine.ignition(screen);
+    } catch (const std::exception& e) {
+        std::cerr << "Failed to start engine: " << e.what() << std::endl;
+        return 1;
+    }
 
-    auto cpuWidget = Make<monitor::ui::CpuWidget>(*cpuMonitorPtr);
-    auto memWidget = Make<monitor::ui::MemWidget>(*memMonitorPtr);
+    auto cpuWidget = ftxui::Make<CpuiWidget>(*cpuMonitorPtr);
+    auto memWidget = ftxui::Make<MemWidget>(*memMonitorPtr);
 
     Component WidgetsContentArea = Renderer(cpuWidget, [cpuWidget, memWidget] {
         return hbox({
@@ -86,7 +103,7 @@ int main()
         }) | ftxui::flex;
     });
 
-    auto Menubar = Make<monitor::ui::MenubarWidget>();
+    auto Menubar = ftxui::Make<MenubarWidget>();
     Menubar->registerMenuGroup("File");
     Menubar->registerMenuGroup("Help");
     Menubar->registerMenuGroup("Edit");

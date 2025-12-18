@@ -4,11 +4,14 @@
 
 namespace monitor::exceptions {
 
+    // base class for sampling exceptions
     class SampleException : public std::runtime_error {
     public: 
         explicit SampleException(const std::string &message)
             : std::runtime_error("SampleException: " + message) {}
     };
+
+
 
     class CpuSampleException : public SampleException {
     public:
