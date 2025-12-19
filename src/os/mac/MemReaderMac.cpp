@@ -30,6 +30,11 @@ namespace monitor::os::mac
     using MemRawSample       = monitor::types::mem::RawSample;
     using MemSampleException = monitor::exceptions::MemSampleException;
 
+    AbstractMemReader* MemReader::clone() const
+    {
+        return new MemReader(*this);
+    }
+
 
     void MemReader::sample(MemRawSample &out)
     {

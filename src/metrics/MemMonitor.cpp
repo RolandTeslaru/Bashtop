@@ -17,7 +17,7 @@ namespace monitor::metrics {
     using MemSampleException = monitor::exceptions::MemSampleException;
 
     // ============================================================================
-    // Constructor / Destructor
+    // Constructor / Destructor / Copy Constructor
     // ============================================================================
     MemMonitor::MemMonitor(
         std::unique_ptr<monitor::os::AbstractMemReader> reader
@@ -28,6 +28,13 @@ namespace monitor::metrics {
 
     MemMonitor::~MemMonitor() {}
 
+    MemMonitor::MemMonitor(const MemMonitor& other)
+        : memReader(other.memReader->clone()),
+          hasSampledOnce(other.hasSampledOnce),
+          prevSample(other.prevSample),
+          latestSnapshot(other.latestSnapshot)
+    {}
+
     // ============================================================================
     // Operator Overloads
     // ============================================================================
@@ -35,6 +42,18 @@ namespace monitor::metrics {
         os << monitor::ansi::BOLD << monitor::ansi::CYAN << "MemMonitor: " << monitor::ansi::RESET << std::endl;
         os << "  Reader: " << *mon.memReader; // deref unique ptr
         return os;
+    }
+
+    MemMonitor& MemMonitor::operator=(MemMonitor other){
+        swap(*this, other);
+        return *this;
+    }
+
+    void swap(MemMonitor& Mon1, MemMonitor& Mon2) noexcept{
+        std::swap(Mon1.memReader, Mon2.memReader);
+        std::swap(Mon1.prevSample, Mon2.prevSample);
+        std::swap(Mon1.latestSnapshot, Mon2.latestSnapshot);
+        std::swap(Mon1.hasSampledOnce, Mon2.hasSampledOnce);
     }
 
     // ============================================================================

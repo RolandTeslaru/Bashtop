@@ -21,6 +21,10 @@ namespace monitor::os::linux {
     using MemRawSample       = monitor::types::mem::RawSample;
     using MemSampleException = monitor::exceptions::MemSampleException;
 
+    AbstractMemReader* MemReader::clone() const {
+        return new MemReader(*this);
+    }
+
     void MemReader::sample(MemRawSample& out) {
         std::ifstream file("/proc/meminfo");
         if (!file.is_open())

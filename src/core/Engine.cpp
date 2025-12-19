@@ -8,6 +8,7 @@
 #include <ftxui/component/screen_interactive.hpp>
 #include <ostream>
 #include <iostream>
+#include <utility>
 
 #include "monitor/ansi.hpp"
 #include "monitor/exceptions/Engine.hpp"
@@ -44,17 +45,18 @@ namespace monitor {
     // ============================================================================
     // Operator Overloads
     // ============================================================================
-    Engine::Engine(const Engine& other) {
-        this->cpuMonitor = other.cpuMonitor;
-        this->memMonitor = other.memMonitor;
-    }
+    Engine::Engine(const Engine& other)
+        : cpuMonitor(other.cpuMonitor),
+          memMonitor(other.memMonitor) {}
 
-    Engine &Engine::operator=(const Engine &other) {
-        if (this == &other)
-            return *this;
+    // Note this operator does not swap the thread
+    // meaning after assigmentment, ignition() must be called to create a new thread
+    Engine &Engine::operator=(Engine other) {
 
-        this->cpuMonitor = other.cpuMonitor;
-        this->memMonitor = other.memMonitor;
+        // destroying and rebuilding a thread is needed becuase std::thread calls the pointer to the same thread function when swapped which uses this old "this" pointer 
+        this->shutdown(); 
+
+        swap(*this, other);
 
         return *this;
     }
@@ -83,6 +85,13 @@ namespace monitor {
 
         return os;
     }
+    
+
+    void swap(Engine& Eng1, Engine& Eng2) noexcept{
+        std::swap(Eng1.cpuMonitor, Eng2.cpuMonitor);
+        std::swap(Eng1.memMonitor, Eng2.memMonitor);
+    }
+
 
     // ============================================================================
     // Public Interface

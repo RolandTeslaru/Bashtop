@@ -28,8 +28,10 @@ namespace monitor {
             // Operator Overloads
             // ====================================================================
             Engine(const Engine &other);
-            Engine& operator=(const Engine &other);
+            Engine& operator=(Engine other);
             friend std::ostream& operator<<(std::ostream& os, const Engine& engine);
+            
+            friend void swap(Engine& Eng1, Engine& Eng2) noexcept;
 
             // ====================================================================
             // Public Interface

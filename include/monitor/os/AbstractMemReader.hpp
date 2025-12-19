@@ -6,10 +6,14 @@ namespace monitor::os {
 
     class AbstractMemReader {
         public:
+            
             AbstractMemReader() = default;
             virtual ~AbstractMemReader() = default;
 
             AbstractMemReader(const AbstractMemReader& other) = default;
+            
+            virtual AbstractMemReader* clone() const = 0;
+            
             AbstractMemReader& operator=(const AbstractMemReader& other) = default;
 
             // cannot make the operator<< pure virtual, so we use this print helper.

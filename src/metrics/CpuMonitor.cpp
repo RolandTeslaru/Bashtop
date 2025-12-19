@@ -10,6 +10,7 @@
 #include "monitor/types/Cpu.hpp"
 #include "monitor/ansi.hpp"
 #include "monitor/exceptions/SampleExceptions.hpp"
+#include <utility>
 
 #include <iostream>
 
@@ -97,6 +98,16 @@ namespace monitor::metrics {
     CpuMonitor::~CpuMonitor() {}
 
 
+    CpuMonitor::CpuMonitor(const CpuMonitor& other)
+        : cpuReader(other.cpuReader->clone()),
+          prevSample(other.prevSample),
+          latestSnapshot(other.latestSnapshot),
+          snapshot_valid(other.snapshot_valid),
+          hasSampledOnce(other.hasSampledOnce),
+          num_cores(other.num_cores),
+          cpu_usage_history(other.cpu_usage_history),
+          core_usage_history(other.core_usage_history) {}
+
 
     // ============================================================================
     // Operator Overloads
@@ -124,6 +135,21 @@ namespace monitor::metrics {
         return os;
     }
 
+    CpuMonitor& CpuMonitor::operator=(CpuMonitor other){
+        swap(*this, other);
+        return *this;
+    }
+
+    void swap(CpuMonitor& Mon1, CpuMonitor& Mon2) noexcept {
+        std::swap(Mon1.cpuReader, Mon2.cpuReader);
+        std::swap(Mon1.prevSample, Mon2.prevSample);
+        std::swap(Mon1.latestSnapshot, Mon2.latestSnapshot);
+        std::swap(Mon1.snapshot_valid, Mon2.snapshot_valid);
+        std::swap(Mon1.hasSampledOnce, Mon2.hasSampledOnce);
+        std::swap(Mon1.num_cores, Mon2.num_cores);
+        std::swap(Mon1.cpu_usage_history, Mon2.cpu_usage_history);
+        std::swap(Mon1.core_usage_history, Mon2.core_usage_history);
+    }
 
 
     // ============================================================================

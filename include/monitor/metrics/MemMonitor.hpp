@@ -13,12 +13,16 @@ namespace monitor::metrics {
             // Constructor / Destructor
             // ====================================================================
             explicit MemMonitor(std::unique_ptr<monitor::os::AbstractMemReader> reader);
+            MemMonitor(const MemMonitor& other);
             ~MemMonitor();
 
             // ====================================================================
             // Operator Overloads
             // ====================================================================
             friend std::ostream& operator<<(std::ostream& os, const MemMonitor& mon);
+
+            MemMonitor& operator=(MemMonitor other);
+            friend void swap(MemMonitor& Mon1, MemMonitor& Mon2) noexcept;
 
             // ====================================================================
             // Public Interface

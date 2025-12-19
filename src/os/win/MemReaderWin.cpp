@@ -21,6 +21,10 @@ namespace monitor::os::win {
 
     using MemSampleException = monitor::exceptions::MemSampleException;
 
+    AbstractMemReader* MemReader::clone() const {
+        return new MemReader(*this);
+    }
+
     void MemReader::sample(monitor::types::mem::RawSample& out) {
         MEMORYSTATUSEX memInfo;
         memInfo.dwLength = sizeof(MEMORYSTATUSEX);

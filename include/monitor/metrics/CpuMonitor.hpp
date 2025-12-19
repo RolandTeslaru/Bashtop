@@ -20,9 +20,15 @@ namespace monitor::metrics {
             ~CpuMonitor();
 
             // ====================================================================
-            // Operator Overloads
+            // Copy Constructor / Operator Overloads
             // ====================================================================
+            CpuMonitor(const CpuMonitor& other);
+            
             friend std::ostream& operator<<(std::ostream& os, const CpuMonitor& mon);
+            
+            CpuMonitor& operator=(CpuMonitor other);
+
+            friend void swap(CpuMonitor& Mon1, CpuMonitor& Mon2) noexcept;
 
             // ====================================================================
             // Public Interface
