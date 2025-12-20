@@ -8,7 +8,7 @@ namespace monitor::os {
     class AbstractPlatformInfoReader;
     class AbstractMemReader;
 
-    std::unique_ptr<AbstractCpuReader>    make_cpu_reader();
+    std::unique_ptr<AbstractCpuReader>          make_cpu_reader();
     std::unique_ptr<AbstractPlatformInfoReader> make_platform_info_reader();
-    std::unique_ptr<AbstractMemReader>    make_mem_reader();
+    std::unique_ptr<AbstractMemReader>          make_mem_reader();
 }
