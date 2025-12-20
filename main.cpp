@@ -24,6 +24,7 @@
 #include "monitor/ansi.hpp"
 #include "monitor/exceptions/Platform.hpp"
 
+#include "monitor/os/simulator/CpuReaderSimulator.hpp"
 
 using CpuMonitor    = monitor::metrics::CpuMonitor;
 using vector_double = std::vector<double>;
@@ -48,9 +49,19 @@ void runTests(){
     );
     std::cout << platformInfo << std::endl;
 
-    
-    monitor::Engine engine;
+    auto cpuReader = std::make_unique<monitor::os::simulator::CpuReader>();
+    auto memReader = monitor::os::make_mem_reader();
+        
+    monitor::Engine engine(
+        std::move(cpuReader),
+        std::move(memReader)
+    );
     auto cpuMonitorPtr = engine.getCpuMonitor();
+
+    // Compute a few snapshots to populate history (uses a simulation reader so the data is fake)
+    cpuMonitorPtr->computeSnapshot();
+    cpuMonitorPtr->computeSnapshot();
+    cpuMonitorPtr->computeSnapshot();
         
     std::cout << engine << std::endl;
 
