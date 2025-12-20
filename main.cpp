@@ -67,7 +67,8 @@ void runTests(){
     std::cout << *cpuWidget << std::endl; // widget is a shared ptr so deref
 }
 
-
+const int MIN_WIDTH = 120;
+const int MIN_HEIGHT = 30; 
 
 int main()
 {
@@ -110,9 +111,9 @@ int main()
             vbox({
                 memWidget->Render() | ftxui::flex,
                 platformInfoWidget->Render() | ftxui::flex,
-            }),
+            }) | ftxui::xflex_grow,
             cpuWidget->Render() | ftxui::flex,
-        }) | ftxui::flex;
+        }) | ftxui::xflex_shrink;
     });
 
     auto Menubar = ftxui::Make<MenubarWidget>();
@@ -174,6 +175,25 @@ int main()
     });
 
     Component Layout = Renderer(layout, [&] {
+        auto dimensions = ftxui::Terminal::Size();
+        if (dimensions.dimx < MIN_WIDTH || dimensions.dimy < MIN_HEIGHT) {
+            return vbox({
+                filler(),
+                vbox({
+                    text(
+                        "Please resize the terminal window to at least " +
+                        std::to_string(MIN_WIDTH) + "x" + std::to_string(MIN_HEIGHT)
+                    ) | hcenter | color(Color::GreenLight),
+                    separator(),
+                    text(
+                        "Current size is " +
+                        std::to_string(dimensions.dimx) + "x" + std::to_string(dimensions.dimy)
+                    ) | hcenter | color(Color::Red),
+                }) | hcenter,
+                filler(),
+            }) | flex;
+        }
+
         Element MenubarWidget = Menubar->Render();
         Element body          = WidgetsContentArea->Render() | flex;
 
