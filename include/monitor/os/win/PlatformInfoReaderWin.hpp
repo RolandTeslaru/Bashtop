@@ -8,7 +8,7 @@
 
 namespace monitor::os::win {
 
-    class PlatformInfoWin final : public monitor::os::AbstractPlatformInfoReader {
+    class PlatformInfoReaderWin final : public monitor::os::AbstractPlatformInfoReader {
         private:
             std::string cpu_name = "Unknown";
             std::string cpu_architecture = "Unknown";
@@ -36,7 +36,7 @@ namespace monitor::os::win {
             [[maybe_unused]] std::string getHostname()       const override { return host_name; }
 
         public:
-            PlatformInfoWin();
+            PlatformInfoReaderWin();
     };
 
 }

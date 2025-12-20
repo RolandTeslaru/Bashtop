@@ -8,18 +8,18 @@
 #include <memory>
 
 #include "monitor/os/AbstractPlatformInfoReader.hpp"
-#include "monitor/os/win/PLatformInfoWin.hpp"
+#include "monitor/os/win/PlatformInfoReaderWin.hpp"
 
 namespace monitor::os::win {
 
-PlatformInfoWin::PlatformInfoWin() {}
+PlatformInfoReaderWin::PlatformInfoReaderWin() {}
 
 }
 
 namespace monitor::os {
     // Engine monitors usually take ownership of the readers
-    std::unique_ptr<AbstractPlatformInfoReader> make_platform_info(){
-        return std::make_unique<win::PlatformInfoWin>();
+    std::unique_ptr<AbstractPlatformInfoReader> make_platform_info_reader(){
+        return std::make_unique<win::PlatformInfoReaderWin>();
     }
 }
 
