@@ -26,6 +26,8 @@ namespace monitor::ui
         if (this == &widget)
             return *this;
 
+        monitor = widget.monitor;
+
         return *this;
     }
 

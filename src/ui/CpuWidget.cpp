@@ -27,6 +27,7 @@ namespace monitor::ui
         if (this == &widget)
             return *this;
 
+        monitor = widget.monitor;
         cpu_usage_history = widget.cpu_usage_history;
 
         return *this;
