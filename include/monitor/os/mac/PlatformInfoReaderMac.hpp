@@ -2,14 +2,14 @@
 
 #ifdef __APPLE__
 
-#include "monitor/os/AbstractPlatformInfo.hpp"
+#include "monitor/os/AbstractPlatformInfoReader.hpp"
 #include <string>
 
 namespace monitor::os::mac {
 
-    class PlatformInfoMac final : public monitor::os::AbstractPlatformInfo {
+    class PlatformInfoReaderMac final : public monitor::os::AbstractPlatformInfoReader {
         public:
-            PlatformInfoMac();
+            PlatformInfoReaderMac();
 
         private:
             static void readFromUnixObj(std::string& arch, std::string& release);
@@ -21,6 +21,6 @@ namespace monitor::os::mac {
 }
 
 #else
-#error "PlatformInfoMac.hpp should only be included on macOS (__APPLE__)"
+#error "PlatformInfoReaderMac.hpp should only be included on macOS (__APPLE__)"
 #endif
 

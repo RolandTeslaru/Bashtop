@@ -5,7 +5,7 @@
 #include <ftxui/dom/elements.hpp>
 
 #include "monitor/metrics/MemMonitor.hpp"
-#include "monitor/metrics/SystemInfoProvider.hpp"
+#include "monitor/metrics/PlatformInfoMonitor.hpp"
 #include "monitor/os/Factory.hpp"
 #include "monitor/core/Engine.hpp"
 

@@ -10,7 +10,7 @@
 
 namespace monitor::os
 {
-    class AbstractPlatformInfo
+    class AbstractPlatformInfoReader
     {
     protected:
         std::string cpu_name       = "unknown";
@@ -26,8 +26,8 @@ namespace monitor::os
         std::string hostname       = "unknown";
 
     public:
-        AbstractPlatformInfo() = default;
-        virtual ~AbstractPlatformInfo() = default;
+        AbstractPlatformInfoReader() = default;
+        virtual ~AbstractPlatformInfoReader() = default;
 
         // CPU
         virtual std::string getCpuName()       const { return cpu_name; }
@@ -42,7 +42,7 @@ namespace monitor::os
         virtual std::string getModelId()       const { return model_id; }
         virtual std::string getHostname()      const { return hostname; }
 
-        AbstractPlatformInfo(const AbstractPlatformInfo &absInfo)
+        AbstractPlatformInfoReader(const AbstractPlatformInfoReader &absInfo)
         :  cpu_name(absInfo.cpu_name),
            arch(absInfo.arch),
            logical_cpus(absInfo.logical_cpus),
@@ -56,7 +56,7 @@ namespace monitor::os
            hostname(absInfo.hostname)
         {}
 
-        AbstractPlatformInfo &operator=(const AbstractPlatformInfo &absInfo)
+        AbstractPlatformInfoReader &operator=(const AbstractPlatformInfoReader &absInfo)
         {
             if (this == &absInfo)
                 return *this;
@@ -75,7 +75,7 @@ namespace monitor::os
         }
 
         friend std::ostream &operator<<(
-            std::ostream &os, const AbstractPlatformInfo &absInfo
+            std::ostream &os, const AbstractPlatformInfoReader &absInfo
         ){
             const int labelWidth = 18; // width for the label column
             

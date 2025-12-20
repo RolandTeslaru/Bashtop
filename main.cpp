@@ -12,12 +12,13 @@
 #include <string>
 
 #include "monitor/metrics/CpuMonitor.hpp"
-#include "monitor/metrics/SystemInfoProvider.hpp"
+#include "monitor/metrics/PlatformInfoMonitor.hpp"
 #include "monitor/os/Factory.hpp"
 #include "monitor/core/Engine.hpp"
 
 #include "monitor/ui/CpuWidget.hpp"
 #include "monitor/ui/MemWidget.hpp"
+#include "monitor/ui/PlatformInfoWidget.hpp"
 #include "monitor/ui/MenubarWidget.hpp"
 
 #include "monitor/ansi.hpp"
@@ -30,16 +31,20 @@ using vector_int    = std::vector<int>;
 
 using PlatformNotSupportedException = monitor::exceptions::PlatformNotSupportedException;
 
-using CpuiWidget    = monitor::ui::CpuWidget;
-using MemWidget     = monitor::ui::MemWidget;
-using MenubarWidget = monitor::ui::MenubarWidget;
+using CpuWidget          = monitor::ui::CpuWidget;
+using MemWidget          = monitor::ui::MemWidget;
+using PlatformInfoWidget = monitor::ui::PlatformInfoWidget;
+using MenubarWidget      = monitor::ui::MenubarWidget;
+
+using PlatformInfoMonitor = monitor::metrics::PlatformInfoMonitor;
+
 
 void runTests(){
     std::cout << std::endl << monitor::ansi::BOLD << monitor::ansi::YELLOW <<"Running tests..." << monitor::ansi::RESET << std::endl << std::endl;
     
     
-    auto platformInfo = monitor::metrics::SystemInfoProvider(
-        monitor::os::make_platform_info()
+    auto platformInfo = PlatformInfoMonitor(
+        monitor::os::make_platform_info_reader()
     );
     std::cout << platformInfo << std::endl;
 
@@ -51,7 +56,7 @@ void runTests(){
 
     auto screen = ScreenInteractive::Fullscreen();
 
-    auto cpuWidget = ftxui::Make<CpuiWidget>(*cpuMonitorPtr);
+    auto cpuWidget = ftxui::Make<CpuWidget>(*cpuMonitorPtr);
 
     Component root = Renderer(cpuWidget, [cpuWidget] {
         return hbox({
@@ -83,6 +88,9 @@ int main()
     monitor::Engine engine;
     auto cpuMonitorPtr = engine.getCpuMonitor();
     auto memMonitorPtr = engine.getMemMonitor();
+    auto platformInfoMonitor = PlatformInfoMonitor(
+        monitor::os::make_platform_info_reader()
+    );
 
     auto screen = ScreenInteractive::Fullscreen();
     
@@ -93,12 +101,16 @@ int main()
         return 1;
     }
 
-    auto cpuWidget = ftxui::Make<CpuiWidget>(*cpuMonitorPtr);
-    auto memWidget = ftxui::Make<MemWidget>(*memMonitorPtr);
+    auto cpuWidget          = ftxui::Make<CpuWidget>(*cpuMonitorPtr);
+    auto memWidget          = ftxui::Make<MemWidget>(*memMonitorPtr);
+    auto platformInfoWidget = ftxui::Make<PlatformInfoWidget>(platformInfoMonitor);
 
-    Component WidgetsContentArea = Renderer(cpuWidget, [cpuWidget, memWidget] {
+    Component WidgetsContentArea = Renderer(cpuWidget, [cpuWidget, memWidget, platformInfoWidget] {
         return hbox({
-            memWidget->Render() | ftxui::flex,
+            vbox({
+                memWidget->Render() | ftxui::flex,
+                platformInfoWidget->Render() | ftxui::flex,
+            }),
             cpuWidget->Render() | ftxui::flex,
         }) | ftxui::flex;
     });

@@ -2,13 +2,13 @@
 
 #ifdef _WIN32
 
-#include "monitor/os/AbstractPlatformInfo.hpp"
+#include "monitor/os/AbstractPlatformInfoReader.hpp"
 #include <cstdint>
 #include <string>
 
 namespace monitor::os::win {
 
-    class PlatformInfoWin final : public monitor::os::AbstractPlatformInfo {
+    class PlatformInfoWin final : public monitor::os::AbstractPlatformInfoReader {
         private:
             std::string cpu_name = "Unknown";
             std::string cpu_architecture = "Unknown";

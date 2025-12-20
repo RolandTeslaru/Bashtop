@@ -7,8 +7,8 @@
 #include <fstream>
 #include <memory>
 
-#include "monitor/os/AbstractPlatformInfo.hpp"
-#include "monitor/os/linux/PlatformInfoLinux.hpp"
+#include "monitor/os/AbstractPlatformInfoReader.hpp"
+#include "monitor/os/linux/PlatformInfoReaderLinux.hpp"
 
 
 #include <unistd.h>
@@ -17,8 +17,8 @@
 
 namespace monitor::os::linux {
 
-    PlatformInfoLinux::PlatformInfoLinux() {
-        PlatformInfoLinux::readFromUnixObj(arch, kernel_release);
+    PlatformInfoReaderLinux::PlatformInfoReaderLinux() {
+        PlatformInfoReaderLinux::readFromUnixObj(arch, kernel_release);
 
         // CPU counts
         long onln = sysconf(_SC_NPROCESSORS_ONLN);
@@ -36,12 +36,12 @@ namespace monitor::os::linux {
 
         os_version = "Linux";
 
-        hostname = PlatformInfoLinux::readHostname();
+        hostname = PlatformInfoReaderLinux::readHostname();
 
         // TODO: read cpu_name, os_build, model_id and other
     }
 
-    void PlatformInfoLinux::readFromUnixObj(std::string& archOut, std::string& kernelRelease) {
+    void PlatformInfoReaderLinux::readFromUnixObj(std::string& archOut, std::string& kernelRelease) {
         struct utsname unixObj{};
         if (uname(&unixObj) == 0) {
             archOut = unixObj.machine;
@@ -49,7 +49,7 @@ namespace monitor::os::linux {
         }
     }
 
-    std::string PlatformInfoLinux::readHostname() {
+    std::string PlatformInfoReaderLinux::readHostname() {
         std::array<char, 256> buffer{};
         if (gethostname(buffer.data(), buffer.size()) == 0)
             return std::string(buffer.data());
@@ -61,8 +61,8 @@ namespace monitor::os::linux {
 
 namespace monitor::os {
     // Engine monitors usually take ownership of the readers
-    std::unique_ptr<AbstractPlatformInfo> make_platform_info(){
-        return std::make_unique<linux::PlatformInfoLinux>();
+    std::unique_ptr<AbstractPlatformInfoReader> make_platform_info_reader(){
+        return std::make_unique<linux::PlatformInfoReaderLinux>();
     }
 }
 

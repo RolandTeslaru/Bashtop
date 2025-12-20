@@ -10,7 +10,7 @@ namespace monitor::os::linux {
 
 class MemReader final : public monitor::os::AbstractMemReader {
 public:
-	AbstractMemReader* clone() const; 
+	AbstractMemReader* clone() const override; 
 	void sample(monitor::types::mem::RawSample& out) override;
 	void print(std::ostream& os) const override;
 };
