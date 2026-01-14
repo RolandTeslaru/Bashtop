@@ -30,11 +30,6 @@ namespace monitor::metrics {
     // Internal Static Helpers
     // ============================================================================
     namespace {
-        template <typename T>
-        double toDouble(T num) {
-            return static_cast<double>(num);
-        }
-
         double computeTotalPercentage(
             const CpuRawSample &newSample,
             const CpuRawSample &prevSample

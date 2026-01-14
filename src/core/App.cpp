@@ -128,6 +128,7 @@ namespace monitor
         return instance;
     }
 
+    // cppcheck-suppress unusedFunction
     Engine &App::getEngine()
     {
         return App::getInstance().engine;

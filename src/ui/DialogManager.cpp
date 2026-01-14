@@ -9,10 +9,10 @@ namespace monitor::ui {
         return instance;
     }
 
-    DialogManager::DialogManager() {
-        ConfirmButton = ftxui::Button("OK", [&] { 
-            show_dialog = false; 
-        });
+    DialogManager::DialogManager()
+        : ConfirmButton(ftxui::Button("OK", [&] {
+            show_dialog = false;
+        })) {
 
         using namespace ftxui;
         DialogComponent = Renderer(ConfirmButton, [&] {
