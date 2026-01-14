@@ -9,8 +9,6 @@
 #include "monitor/os/Factory.hpp"
 #include "monitor/core/Engine.hpp"
 
-using namespace ftxui;
-
 using PlatformInfoMonitor = monitor::metrics::PlatformInfoMonitor;
 
 namespace monitor::ui {
@@ -33,7 +31,7 @@ namespace monitor::ui {
             // ====================================================================
             // Public Interface
             // ====================================================================
-            Element OnRender() override;
+            ftxui::Element OnRender() override;
 
         private:
             // ====================================================================
