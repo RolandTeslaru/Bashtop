@@ -12,7 +12,7 @@ namespace monitor {
 class App {
 public:
   static App &getInstance();
-  static Engine &getEngine();
+  [[maybe_unused]] static Engine &getEngine();
 
   App(const App &other) = delete;
   App &operator=(const App &) = delete;

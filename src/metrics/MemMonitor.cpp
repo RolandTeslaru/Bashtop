@@ -8,6 +8,7 @@
 #include "monitor/metrics/MemMonitor.hpp"
 #include "monitor/types/Mem.hpp"
 #include "monitor/ansi.hpp"
+#include "monitor/core/TemplateUtils.hpp"
 #include "monitor/exceptions/SampleExceptions.hpp"
 
 
@@ -32,7 +33,8 @@ namespace monitor::metrics {
         : memReader(other.memReader->clone()),
           hasSampledOnce(other.hasSampledOnce),
           prevSample(other.prevSample),
-          latestSnapshot(other.latestSnapshot)
+            latestSnapshot(other.latestSnapshot),
+            used_history(other.used_history)
     {}
 
     // ============================================================================
@@ -54,6 +56,7 @@ namespace monitor::metrics {
         std::swap(Mon1.prevSample, Mon2.prevSample);
         std::swap(Mon1.latestSnapshot, Mon2.latestSnapshot);
         std::swap(Mon1.hasSampledOnce, Mon2.hasSampledOnce);
+        std::swap(Mon1.used_history, Mon2.used_history);
     }
 
     // ============================================================================
@@ -69,16 +72,18 @@ namespace monitor::metrics {
             throw; 
         }
 
-        this->memReader->sample(currentSample);
-
         if (this->hasSampledOnce == false) {
             prevSample = currentSample;
             hasSampledOnce = true;
         }
 
         latestSnapshot.total = currentSample.total;
-        latestSnapshot.used = currentSample.used;
-        latestSnapshot.free = currentSample.free;
+        latestSnapshot.used = monitor::core::clamp_value<std::uint64_t>(
+            currentSample.used, 0ULL, currentSample.total
+        );
+        latestSnapshot.free = monitor::core::clamp_value<std::uint64_t>(
+            currentSample.free, 0ULL, currentSample.total
+        );
 
         if (currentSample.total != 0) {
             latestSnapshot.used_percentage = (static_cast<double>(currentSample.used) / static_cast<double>(currentSample.total)) * 100.0;
@@ -89,8 +94,12 @@ namespace monitor::metrics {
         }   
 
         latestSnapshot.swapTotal = currentSample.swapTotal;
-        latestSnapshot.swapUsed = currentSample.swapUsed;
-        latestSnapshot.swapFree = currentSample.swapFree;
+        latestSnapshot.swapUsed = monitor::core::clamp_value<std::uint64_t>(
+            currentSample.swapUsed, 0ULL, currentSample.swapTotal
+        );
+        latestSnapshot.swapFree = monitor::core::clamp_value<std::uint64_t>(
+            currentSample.swapFree, 0ULL, currentSample.swapTotal
+        );
 
         if (currentSample.swapTotal != 0) {
             latestSnapshot.swap_used_percentage = (static_cast<double>(currentSample.swapUsed) / static_cast<double>(currentSample.swapTotal)) * 100.0;
@@ -101,6 +110,8 @@ namespace monitor::metrics {
         }
 
         this->prevSample = std::move(currentSample);
+
+        used_history.push(latestSnapshot.used);
     }
 
     const MemSnapshot& MemMonitor::getLatestSnapshot() const {

@@ -16,7 +16,7 @@ public:
   DialogManager &setDialogTitle(std::string);
   DialogManager &setDialogBody(std::string);
   DialogManager &show();
-  DialogManager &hide();
+  [[maybe_unused]] DialogManager &hide();
   ftxui::Component getDialogComponent();
 
   bool &isShowingDialog();

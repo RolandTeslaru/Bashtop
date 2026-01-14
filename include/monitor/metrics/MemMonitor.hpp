@@ -1,7 +1,9 @@
 #pragma once
+#include <cstdint>
 #include <memory>
 #include <ostream>
 #include "monitor/os/AbstractMemReader.hpp"
+#include "monitor/types/RollingHistory.hpp"
 
 using MemRawSample = monitor::types::mem::RawSample;
 using MemSnapshot = monitor::types::mem::Snapshot;
@@ -34,10 +36,15 @@ namespace monitor::metrics {
             // ====================================================================
             // Member Variables
             // ====================================================================
+            static const std::size_t HISTORY_LIMIT = 240;
+
             std::unique_ptr<monitor::os::AbstractMemReader> memReader;
 
             bool hasSampledOnce = false;
             MemRawSample prevSample;
             MemSnapshot latestSnapshot;
+
+            monitor::types::RollingHistory<std::uint64_t> used_history =
+                monitor::types::RollingHistory<std::uint64_t>(HISTORY_LIMIT);
     };
 }

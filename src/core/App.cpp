@@ -59,13 +59,13 @@ namespace monitor
             .addGroup("Edit")
             .addGroup("Viewo")
             .addItem("File", "About Bashtop",
-                        Component{}, // no compoennt currnetl
-                        []
-                        {
-                            monitor::ui::DialogManager::getInstance().setDialogTitle("About Bashtop").setDialogBody("Bashtop is a terminal system monitor tool that "
-                                                                                                                    "tracks cpu and memory usage.\n")
-                                .show();
-                        })
+                Component{}, // no compoennt currnetl
+                []{
+                    monitor::ui::DialogManager::getInstance()
+                        .setDialogTitle("About Bashtop")
+                        .setDialogBody("Bashtop is a terminal system monitor tool that " "tracks cpu and memory usage.\n")
+                        .show();
+                })
             .addItem("File", "Quit", Component{}, [this]
                         { this->screen.Exit(); })
             .build();

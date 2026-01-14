@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include "monitor/types/Cpu.hpp"
+#include "monitor/types/RollingHistory.hpp"
 #include "monitor/os/AbstractCpuReader.hpp"
 #include <ostream>
 
@@ -44,6 +45,8 @@ namespace monitor::metrics {
             // ====================================================================
             // Member Variables
             // ====================================================================
+            static const std::size_t HISTORY_LIMIT = 240;
+
             std::unique_ptr<AbstractCpuReader> cpuReader;
 
             CpuRawSample   prevSample;
@@ -54,7 +57,7 @@ namespace monitor::metrics {
             size_t num_cores;  // number of cores
 
             // History
-            vector_double cpu_usage_history;
-            std::vector<vector_double> core_usage_history;
+            monitor::types::RollingHistory<double> cpu_usage_history = monitor::types::RollingHistory<double>(HISTORY_LIMIT);
+            std::vector<monitor::types::RollingHistory<double>> core_usage_history;
     };
 }

@@ -9,6 +9,7 @@
 #include "monitor/metrics/CpuMonitor.hpp"
 #include "monitor/types/Cpu.hpp"
 #include "monitor/ansi.hpp"
+#include "monitor/core/TemplateUtils.hpp"
 #include "monitor/exceptions/SampleExceptions.hpp"
 #include <utility>
 
@@ -38,17 +39,13 @@ namespace monitor::metrics {
             const CpuRawSample &newSample,
             const CpuRawSample &prevSample
         ) {
-            const double idle_delta = toDouble(newSample.total.idle - prevSample.total.idle);
-            const double total_delta = toDouble(newSample.total.total - prevSample.total.total);
+            const double idle_delta = static_cast<double>(newSample.total.idle - prevSample.total.idle);
+            const double total_delta = static_cast<double>(newSample.total.total - prevSample.total.total);
 
             double total_percentage = 0.0;
             if (total_delta != 0) {
                 total_percentage = (1.0 - (idle_delta / total_delta)) * 100.0;
-
-                if (total_percentage < 0.0)
-                    total_percentage = 0.0;
-                else if (total_percentage > 100.0)
-                    total_percentage = 100.0;
+                total_percentage = monitor::core::clamp_value(total_percentage, 0.0, 100.0);
             }
 
             return total_percentage;
@@ -57,16 +54,13 @@ namespace monitor::metrics {
         double computeCorePercentage(
             const CoreTicks newCoreTick,
             const CoreTicks prevCoreTick) {
-            const double idle_delta = toDouble(newCoreTick.idle - prevCoreTick.idle);
-            const double total_delta = toDouble(newCoreTick.total - prevCoreTick.total);
+            const double idle_delta = static_cast<double>(newCoreTick.idle - prevCoreTick.idle);
+            const double total_delta = static_cast<double>(newCoreTick.total - prevCoreTick.total);
 
             double core_percentage = 0.0;
             if (total_delta != 0) {
                 core_percentage = (1.0 - (idle_delta / total_delta)) * 100.0;
-                if (core_percentage < 0.0)
-                    core_percentage = 0.0;
-                else if (core_percentage > 100.0)
-                    core_percentage = 100.0;
+                core_percentage = monitor::core::clamp_value(core_percentage, 0.0, 100.0);
             }
             return core_percentage;
         }
@@ -179,7 +173,7 @@ namespace monitor::metrics {
 
 
     const vector_double CpuMonitor::getCpuUsageHistory() {
-        return this->cpu_usage_history;
+        return this->cpu_usage_history.values();
     }
 
 
@@ -192,7 +186,7 @@ namespace monitor::metrics {
             return empty;
         }
 
-        return this->core_usage_history[coreIdx];
+        return this->core_usage_history[coreIdx].values();
     }
 
 
@@ -227,7 +221,10 @@ namespace monitor::metrics {
                 currentSample.per_core.size(), 0.0
             );
 
-            core_usage_history.assign(currentSample.per_core.size(), vector_double());
+            core_usage_history.assign(
+                currentSample.per_core.size(),
+                monitor::types::RollingHistory<double>(CpuMonitor::HISTORY_LIMIT)
+            );
 
             // initial dummy sample taken; we don't have a computed snapshot yet
             this->snapshot_valid = false;
@@ -243,7 +240,7 @@ namespace monitor::metrics {
 
         latestSnapshot.total_percentage = processor_usage;
 
-        this->cpu_usage_history.push_back(processor_usage);
+        this->cpu_usage_history.push(processor_usage);
 
 
         // Get the number of cores, it should stay the same but they can change
@@ -265,7 +262,7 @@ namespace monitor::metrics {
 
             latestSnapshot.per_core_percentage[coreIdx] = corePercentage;
 
-            this->core_usage_history[coreIdx].push_back(corePercentage);
+            this->core_usage_history[coreIdx].push(corePercentage);
         }
 
         this->prevSample = std::move(currentSample);
