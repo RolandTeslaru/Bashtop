@@ -2,8 +2,7 @@
 
 **Cross-platform terminal system monitor written in C++.**
 
-![Screen Recording 2025-12-10 at 09 19 02-2-2](https://github.com/user-attachments/assets/6a6e688b-5974-4dd7-9189-cdd5575c45f3)
-
+![ScreenRecording2026-02-25at11 16 16-ezgif com-optimize](https://github.com/user-attachments/assets/6272c6e3-bae4-4b57-a49d-ee31ba73bef3)
 
 Reads CPU usage (total + per core), memory usage (currently none), platform info (mac and partially linux) and displays them in a terminal interface.
 
