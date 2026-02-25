@@ -4,7 +4,7 @@
 
 ![ScreenRecording2026-02-25at11 16 16-ezgif com-optimize](https://github.com/user-attachments/assets/6272c6e3-bae4-4b57-a49d-ee31ba73bef3)
 
-Reads CPU usage (total + per core), memory usage (currently none), platform info (mac and partially linux) and displays them in a terminal interface.
+Reads CPU usage (total + per core), memory usage, platform info and displays them in a terminal interface.
 
 Current Implementation Status
 
@@ -14,12 +14,14 @@ CPU Usage
 	•	✅ Linux: reading from /proc/stat.
 	•	✅ Windows: NtQuerySystemInformation from ntdll.dll 
 
-💾 Platform Information
+Platform Information
 
-	•	✅ macOS: Full implementation using unix headers + sysctl
-	•	⚠️ Linux: Partial (same unix headers like on mac but not sysctl so no cpu name and other stuff).
+	•	✅ macOS: sysctlbyname + uname.
+	•	⚠️ Linux: uname + sysconf. Missing: cpu name, os build, model id.
 	•	⏳ Windows: Not yet implemented.
 
-🧮 Memory Usage
+Memory Usage
 
-	•	🚧 nope
+	•	✅ macOS: sysctl + host_statistics64 (Mach API).
+	•	✅ Linux: reading from /proc/meminfo.
+	•	✅ Windows: using GlobalMemoryStatusEx api.
