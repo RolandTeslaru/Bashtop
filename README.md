@@ -17,8 +17,8 @@ CPU Usage
 Platform Information
 
 	•	✅ macOS: sysctlbyname + uname.
-	•	⚠️ Linux: uname + sysconf. Missing: cpu name, os build, model id.
-	•	⏳ Windows: Not yet implemented.
+	•	✅ Linux: uname + sysconf
+	•	✅ Windows: sysinfoapi.h, winnt.h
 
 Memory Usage
 
